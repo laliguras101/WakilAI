@@ -1,30 +1,274 @@
 package com.example.ui.auth
 
+import android.app.Activity
+import android.content.Context
+import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.AccountBalance
 import androidx.compose.material.icons.filled.Balance
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.VerifiedUser
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.credentials.ClearCredentialStateRequest
+import androidx.credentials.CredentialManager
+import androidx.credentials.CustomCredential
+import androidx.credentials.GetCredentialRequest
+import androidx.credentials.exceptions.GetCredentialCancellationException
+import com.example.R
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.Companion.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
+import com.google.firebase.Firebase
+import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.auth.auth
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
+
+private const val AUTH_TAG = "WakilAuth"
+
+// 1. Silent Auto-Sign-In on Startup (exclusively GetGoogleIdOption)
+fun attemptAutoSignIn(
+    context: Context,
+    credentialManager: CredentialManager,
+    onAuthSuccess: () -> Unit,
+    onUnauthenticated: () -> Unit,
+    scope: CoroutineScope
+) {
+    val existingUser = try {
+        Firebase.auth.currentUser
+    } catch (_: Exception) {
+        null
+    }
+    if (existingUser != null) {
+        onAuthSuccess()
+        return
+    }
+    val clientId = try {
+        context.getString(R.string.default_web_client_id)
+    } catch (_: Exception) {
+        onUnauthenticated()
+        return
+    }
+    val googleIdOption = GetGoogleIdOption.Builder()
+        .setFilterByAuthorizedAccounts(true)
+        .setServerClientId(clientId)
+        .setAutoSelectEnabled(true)
+        .build()
+    val request = GetCredentialRequest.Builder()
+        .addCredentialOption(googleIdOption)
+        .build()
+
+    scope.launch {
+        try {
+            val cred = credentialManager.getCredential(context, request).credential
+            if (cred is CustomCredential && cred.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+                val token = GoogleIdTokenCredential.createFrom(cred.data).idToken
+                Firebase.auth.signInWithCredential(GoogleAuthProvider.getCredential(token, null)).await()
+                onAuthSuccess()
+            } else {
+                onUnauthenticated()
+            }
+        } catch (_: Exception) {
+            onUnauthenticated()
+        }
+    }
+}
+
+// 2. Interactive Google Sign-In (exclusively GetSignInWithGoogleOption)
+fun onGoogleSignInClicked(
+    context: Context,
+    credentialManager: CredentialManager,
+    onAuthSuccess: () -> Unit,
+    onAuthError: (String) -> Unit,
+    scope: CoroutineScope,
+    onAuthCancelled: () -> Unit = {}
+) {
+    val clientId = try {
+        context.getString(R.string.default_web_client_id)
+    } catch (_: Exception) {
+        onAuthError("Google Sign-In configuration missing: default_web_client_id not found")
+        return
+    }
+    val signInOption = GetSignInWithGoogleOption.Builder(serverClientId = clientId).build()
+    val request = GetCredentialRequest.Builder()
+        .addCredentialOption(signInOption)
+        .build()
+
+    scope.launch {
+        try {
+            val activityContext = context as? Activity ?: context
+            val cred = credentialManager.getCredential(activityContext, request).credential
+            if (cred is CustomCredential && cred.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+                val token = GoogleIdTokenCredential.createFrom(cred.data).idToken
+                Firebase.auth.signInWithCredential(GoogleAuthProvider.getCredential(token, null)).await()
+                onAuthSuccess()
+            } else {
+                onAuthError("Unexpected credential type received")
+            }
+        } catch (e: GetCredentialCancellationException) {
+            Log.w(AUTH_TAG, "Google Sign-In flow cancelled or dismissed: ${e.message}", e)
+            onAuthCancelled()
+        } catch (e: Exception) {
+            Log.e(AUTH_TAG, "Google Sign-In failed", e)
+            onAuthError(e.localizedMessage ?: "Sign in failed")
+        }
+    }
+}
+
+// 3. Safe Sign-Out inside NonCancellable
+fun signOutUser(
+    credentialManager: CredentialManager,
+    scope: CoroutineScope,
+    onSignOutComplete: () -> Unit = {}
+) {
+    scope.launch {
+        withContext(NonCancellable) {
+            try {
+                credentialManager.clearCredentialState(ClearCredentialStateRequest())
+            } catch (e: Exception) {
+                Log.w(AUTH_TAG, "Failed to clear credential state: ${e.message}")
+            } finally {
+                try {
+                    Firebase.auth.signOut()
+                } catch (_: Exception) {
+                    // Ignore when running in offline/local test mode
+                }
+                onSignOutComplete()
+            }
+        }
+    }
+}
+
+private enum class AuthSubPage {
+    SPLASH_DISCLAIMER,
+    SIGN_IN
+}
+
+@Composable
+fun WakilAuthEntryScreen(
+    onAuthSuccess: () -> Unit,
+    onSkipAuth: () -> Unit = {}
+) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val credentialManager = remember { CredentialManager.create(context) }
+
+    var currentSubPage by remember { mutableStateOf(AuthSubPage.SPLASH_DISCLAIMER) }
+    var isSigningIn by remember { mutableStateOf(false) }
+    var authErrorMessage by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(Unit) {
+        attemptAutoSignIn(
+            context = context,
+            credentialManager = credentialManager,
+            onAuthSuccess = onAuthSuccess,
+            onUnauthenticated = {},
+            scope = scope
+        )
+    }
+
+    val triggerGoogleSignIn: () -> Unit = {
+        authErrorMessage = null
+        isSigningIn = true
+        onGoogleSignInClicked(
+            context = context,
+            credentialManager = credentialManager,
+            onAuthSuccess = {
+                isSigningIn = false
+                onAuthSuccess()
+            },
+            onAuthError = { msg ->
+                isSigningIn = false
+                authErrorMessage = msg
+            },
+            scope = scope,
+            onAuthCancelled = {
+                isSigningIn = false
+            }
+        )
+    }
+
+    when (currentSubPage) {
+        AuthSubPage.SPLASH_DISCLAIMER -> {
+            WakilSplashDisclaimerContent(
+                onContinue = { currentSubPage = AuthSubPage.SIGN_IN },
+                onSkipAuth = onSkipAuth
+            )
+        }
+        AuthSubPage.SIGN_IN -> {
+            BackHandler { currentSubPage = AuthSubPage.SPLASH_DISCLAIMER }
+            WakilSignInContent(
+                isLoading = isSigningIn,
+                errorMessage = authErrorMessage,
+                onBack = { currentSubPage = AuthSubPage.SPLASH_DISCLAIMER },
+                onGoogleSignIn = triggerGoogleSignIn,
+                onSkipAuth = onSkipAuth
+            )
+        }
+    }
+}
 
 @Composable
 fun WakilSplashDisclaimerContent(
-    onContinue: () -> Unit
+    onContinue: () -> Unit,
+    onSkipAuth: (() -> Unit)? = null
 ) {
     var scopeExpanded by remember { mutableStateOf(false) }
-    var termsChecked by remember { mutableStateOf(false) }
+    var termsChecked by remember { mutableStateOf(true) }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -40,6 +284,7 @@ fun WakilSplashDisclaimerContent(
         ) {
             Spacer(modifier = Modifier.height(24.dp))
 
+            // Minimal Brand Stage
             Column(
                 modifier = Modifier
                     .padding(horizontal = 24.dp)
@@ -110,6 +355,7 @@ fun WakilSplashDisclaimerContent(
                 }
             }
 
+            // Disclaimer Bottom Sheet Card
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
@@ -139,12 +385,13 @@ fun WakilSplashDisclaimerContent(
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = "Wakil uses advanced AI to help navigate Nepali legal statutes, court procedures, and legal documents. It is designed for informational purposes pursuant to Muluki Samhita and Legal Practitioners Act 2050.",
+                            text = "Wakil uses advanced AI to help navigate Nepali legal statutes, court procedures, and legal documents. It is designed for informational purposes.",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.secondary
                         )
                     }
 
+                    // Interactive Terms Accordion
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -180,6 +427,7 @@ fun WakilSplashDisclaimerContent(
                         }
                     }
 
+                    // Checkbox Module
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -231,8 +479,40 @@ fun WakilSplashDisclaimerContent(
                     ) {
                         Text(
                             text = "Continue",
-                            style = MaterialTheme.typography.titleMedium
+                            style = MaterialTheme.typography.headlineSmall
                         )
+                    }
+
+                    if (onSkipAuth != null) {
+                        Surface(
+                            onClick = onSkipAuth,
+                            shape = CircleShape,
+                            color = MaterialTheme.colorScheme.surfaceContainerLow,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(48.dp)
+                                .testTag("skip_auth_splash_button")
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxSize(),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Skip Auth (Test Mode)",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    fontWeight = FontWeight.Medium
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.secondary,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -241,13 +521,12 @@ fun WakilSplashDisclaimerContent(
 }
 
 @Composable
-fun WakilSignInContent(
-    emailPhone: String,
-    onEmailPhoneChange: (String) -> Unit,
-    password: String,
-    onPasswordChange: (String) -> Unit,
+private fun WakilSignInContent(
+    isLoading: Boolean,
+    errorMessage: String?,
     onBack: () -> Unit,
-    onSignIn: () -> Unit
+    onGoogleSignIn: () -> Unit,
+    onSkipAuth: () -> Unit
 ) {
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -270,8 +549,9 @@ fun WakilSignInContent(
                     modifier = Modifier.testTag("signin_back_button")
                 ) {
                     Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Back to disclaimer"
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back to disclaimer",
+                        tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }
@@ -305,61 +585,117 @@ fun WakilSignInContent(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Access your verified Nepal law research, statutes, and legal drafts securely.",
+                text = "Sync your legal conversations, saved statutes, and contract drafts securely across devices.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.secondary,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                modifier = Modifier.widthIn(max = 320.dp)
             )
+
+            if (errorMessage != null) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Surface(
+                    color = MaterialTheme.colorScheme.errorContainer,
+                    shape = RoundedCornerShape(14.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = errorMessage,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        modifier = Modifier.padding(14.dp)
+                    )
+                }
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            OutlinedTextField(
-                value = emailPhone,
-                onValueChange = onEmailPhoneChange,
-                label = { Text("Email or +977 Phone") },
-                singleLine = true,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag("signin_email_phone_input")
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            var passwordVisible by remember { mutableStateOf(false) }
-            OutlinedTextField(
-                value = password,
-                onValueChange = onPasswordChange,
-                label = { Text("Password") },
-                singleLine = true,
-                visualTransformation = if (passwordVisible) androidx.compose.ui.text.input.VisualTransformation.None else androidx.compose.ui.text.input.PasswordVisualTransformation(),
-                trailingIcon = {
-                    IconButton(
-                        onClick = { passwordVisible = !passwordVisible },
-                        modifier = Modifier.testTag("password_visibility_toggle")
-                    ) {
-                        Icon(
-                            imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                            contentDescription = if (passwordVisible) "Hide password" else "Show password"
-                        )
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag("signin_password_input")
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
-
+            // Primary Google Sign-In Button (Credential Manager GetSignInWithGoogleOption)
             Button(
-                onClick = onSignIn,
-                enabled = emailPhone.isNotBlank() && password.isNotBlank(),
+                onClick = onGoogleSignIn,
+                enabled = !isLoading,
                 shape = CircleShape,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                ),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp)
-                    .testTag("signin_submit_button")
+                    .testTag("google_sign_in_button")
             ) {
-                Text("Sign In")
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(22.dp),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.AccountBalance,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                        tint = MaterialTheme.colorScheme.onPrimary
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text(
+                        text = "Continue with Google",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Skip Auth for Testing Button
+            Surface(
+                onClick = onSkipAuth,
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.surfaceContainerLow,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
+                    .testTag("skip_auth_button")
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Skip Auth (Test Mode)",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.VerifiedUser,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier.size(15.dp)
+                )
+                Text(
+                    text = "Protected by Google Sign-In & Firebase Security Rules",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.secondary
+                )
             }
         }
     }
