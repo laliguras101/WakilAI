@@ -12,4 +12,5 @@
     <string name="ask_wakil_placeholder">Ask Wakil...</string>
     <string name="legal_disclaimer_footer">Wakil provides statutory legal reference under Nepalese law, not certified legal advocacy.</string>
     <string name="admin_console_title">Wakil Admin</string>
+    <string name="default_web_client_id" translatable="false">AI_STUDIO_DEFAULT_WEB_CLIENT_ID</string>
 </resources>
