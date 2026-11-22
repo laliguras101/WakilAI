@@ -62,20 +62,22 @@ class _LegalDisclaimerSheetState extends State<LegalDisclaimerSheet> {
             children: [
               Icon(Icons.gavel, color: AppColors.primaryNavy, size: 28),
               SizedBox(width: 10),
-              Text(
-                'AI Legal Information Notice',
-                key: Key('disclaimer_title'),
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+              Expanded(
+                child: Text(
+                  'AI Legal Information Notice • कानुनी सूचना',
+                  key: Key('disclaimer_title'),
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 12),
           const Text(
-            'Wakil uses advanced AI to help navigate Nepali legal statutes, court procedures, and legal documents. It is provided strictly for informational purposes and does not constitute formal legal counsel.',
+            'Wakil uses advanced AI to help navigate Nepali legal statutes, court procedures, and legal documents. It is provided strictly for informational purposes and does not constitute formal legal counsel.\n(वकिलले नेपाली ऐन, नियम र कार्यविधि बुझ्न सहयोग गर्दछ। यो केवल सूचनामूलक प्रयोजनका लागि हो।)',
             style: TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.4),
           ),
           const SizedBox(height: 14),
@@ -119,7 +121,7 @@ class _LegalDisclaimerSheetState extends State<LegalDisclaimerSheet> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Text(
-                '• Grounded exclusively in Constitution of Nepal & Muluki Codes.\n• Real-time advocate consultation required for official court proceedings.\n• All communications are encrypted.',
+                '• Grounded exclusively in Constitution of Nepal & Muluki Codes (मुलुकी संहिता).\n• Under the Legal Practitioners Act 2050 (नेपाल कानुन व्यवसायी परिषद ऐन, २०५०), this AI provides statutory legal reference, not certified courtroom advocacy.\n• Real-time advocate consultation required for official court proceedings.\n• All communications are encrypted.',
                 style: TextStyle(fontSize: 12, color: AppColors.textSecondary, height: 1.5),
               ),
             ),
@@ -143,7 +145,7 @@ class _LegalDisclaimerSheetState extends State<LegalDisclaimerSheet> {
                 child: Padding(
                   padding: EdgeInsets.only(top: 12.0),
                   child: Text(
-                    'I acknowledge that Wakil provides legal information only, and I agree to the Terms of Service.',
+                    'I acknowledge that Wakil provides legal information only, and I agree to the Terms of Service.\n(म स्वीकार गर्दछु कि वकिलले कानुनी जानकारी मात्र प्रदान गर्दछ।)',
                     style: TextStyle(fontSize: 12, color: AppColors.textPrimary),
                   ),
                 ),
