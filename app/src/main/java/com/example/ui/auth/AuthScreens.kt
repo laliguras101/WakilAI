@@ -74,6 +74,7 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.auth
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
@@ -193,9 +194,91 @@ fun signOutUser(
     }
 }
 
-private enum class AuthSubPage {
-    SPLASH_DISCLAIMER,
+enum class AuthSubPage {
+    SPLASH,
+    DISCLAIMER,
     SIGN_IN
+}
+
+@Composable
+fun WakilSplashContent(
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.surfaceContainerLowest
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .windowInsetsPadding(WindowInsets.safeDrawing)
+                .padding(horizontal = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(112.dp)
+                    .clip(RoundedCornerShape(32.dp))
+                    .background(MaterialTheme.colorScheme.surfaceContainerLow),
+                contentAlignment = Alignment.Center
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(64.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Balance,
+                        contentDescription = "Wakil Legal Scales Emblem",
+                        tint = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.size(34.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Text(
+                text = "Wakil",
+                style = MaterialTheme.typography.displayLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(
+                text = "Legal Intelligence for Nepal",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.secondary
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surfaceContainer)
+                    .padding(horizontal = 16.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(6.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary)
+                )
+                Text(
+                    text = "CONSTITUTION • MULUKI CODES",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.secondary
+                )
+            }
+        }
+    }
 }
 
 @Composable
@@ -207,7 +290,7 @@ fun WakilAuthEntryScreen(
     val scope = rememberCoroutineScope()
     val credentialManager = remember { CredentialManager.create(context) }
 
-    var currentSubPage by remember { mutableStateOf(AuthSubPage.SPLASH_DISCLAIMER) }
+    var currentSubPage by remember { mutableStateOf(AuthSubPage.SPLASH) }
     var isSigningIn by remember { mutableStateOf(false) }
     var authErrorMessage by remember { mutableStateOf<String?>(null) }
 
@@ -243,18 +326,34 @@ fun WakilAuthEntryScreen(
     }
 
     when (currentSubPage) {
-        AuthSubPage.SPLASH_DISCLAIMER -> {
+        AuthSubPage.SPLASH -> {
+            LaunchedEffect(Unit) {
+                delay(1500L)
+                val user = try {
+                    Firebase.auth.currentUser
+                } catch (_: Exception) {
+                    null
+                }
+                if (user != null) {
+                    onAuthSuccess()
+                } else {
+                    currentSubPage = AuthSubPage.DISCLAIMER
+                }
+            }
+            WakilSplashContent()
+        }
+        AuthSubPage.DISCLAIMER -> {
             WakilSplashDisclaimerContent(
                 onContinue = { currentSubPage = AuthSubPage.SIGN_IN },
                 onSkipAuth = onSkipAuth
             )
         }
         AuthSubPage.SIGN_IN -> {
-            BackHandler { currentSubPage = AuthSubPage.SPLASH_DISCLAIMER }
+            BackHandler { currentSubPage = AuthSubPage.DISCLAIMER }
             WakilSignInContent(
                 isLoading = isSigningIn,
                 errorMessage = authErrorMessage,
-                onBack = { currentSubPage = AuthSubPage.SPLASH_DISCLAIMER },
+                onBack = { currentSubPage = AuthSubPage.DISCLAIMER },
                 onGoogleSignIn = triggerGoogleSignIn,
                 onSkipAuth = onSkipAuth
             )
@@ -278,6 +377,7 @@ fun WakilSplashDisclaimerContent(
             modifier = Modifier
                 .fillMaxSize()
                 .windowInsetsPadding(WindowInsets.safeDrawing)
+                .verticalScroll(rememberScrollState())
                 .widthIn(max = 480.dp),
             verticalArrangement = Arrangement.SpaceBetween,
             horizontalAlignment = Alignment.CenterHorizontally
@@ -287,8 +387,7 @@ fun WakilSplashDisclaimerContent(
             // Minimal Brand Stage
             Column(
                 modifier = Modifier
-                    .padding(horizontal = 24.dp)
-                    .weight(1f),
+                    .padding(horizontal = 24.dp, vertical = 16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
@@ -518,6 +617,14 @@ fun WakilSplashDisclaimerContent(
             }
         }
     }
+}
+
+@Composable
+fun WakilDisclaimerContent(
+    onContinue: () -> Unit,
+    onSkipAuth: (() -> Unit)? = null
+) {
+    WakilSplashDisclaimerContent(onContinue = onContinue, onSkipAuth = onSkipAuth)
 }
 
 @Composable
