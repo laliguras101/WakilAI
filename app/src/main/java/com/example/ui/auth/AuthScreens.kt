@@ -325,11 +325,24 @@ fun WakilSignInContent(
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            var passwordVisible by remember { mutableStateOf(false) }
             OutlinedTextField(
                 value = password,
                 onValueChange = onPasswordChange,
                 label = { Text("Password") },
                 singleLine = true,
+                visualTransformation = if (passwordVisible) androidx.compose.ui.text.input.VisualTransformation.None else androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                trailingIcon = {
+                    IconButton(
+                        onClick = { passwordVisible = !passwordVisible },
+                        modifier = Modifier.testTag("password_visibility_toggle")
+                    ) {
+                        Icon(
+                            imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                            contentDescription = if (passwordVisible) "Hide password" else "Show password"
+                        )
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .testTag("signin_password_input")
