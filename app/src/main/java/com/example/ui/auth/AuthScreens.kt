@@ -728,6 +728,20 @@ fun WakilSignInContent(
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            // US-04: Email or +977 Phone input field
+            OutlinedTextField(
+                value = emailPhone,
+                onValueChange = { emailPhone = it },
+                label = { Text("Email or +977 Phone") },
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("signin_email_phone_input")
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
             // US-05: Password input field with visibility toggle
             OutlinedTextField(
                 value = password,
@@ -751,6 +765,29 @@ fun WakilSignInContent(
                     .fillMaxWidth()
                     .testTag("signin_password_input")
             )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // US-04: Credential Submit Button
+            Button(
+                onClick = { onSignInSubmit?.invoke(emailPhone, password) },
+                enabled = emailPhone.isNotBlank() && password.isNotBlank() && !isLoading,
+                shape = CircleShape,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+                    .testTag("signin_submit_button")
+            ) {
+                Text(
+                    text = "Sign In",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
 
             Spacer(modifier = Modifier.height(20.dp))
 
