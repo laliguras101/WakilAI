@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">Wakil</string>
+    <string name="tagline">Legal Intelligence for Nepal</string>
+    <string name="disclaimer_title">AI Legal Information</string>
+    <string name="disclaimer_body">Wakil uses advanced AI to help navigate Nepali legal statutes, court procedures, and legal documents. It is designed for informational purposes.</string>
+    <string name="disclaimer_scope_title">Coverage &amp; Statutory Scope</string>
+    <string name="disclaimer_scope_body">Includes Muluki Civil Code 2074, Muluki Criminal Code 2074, Company Act 2063, and Supreme Court precedent digests. Always consult a licensed advocate for actionable courtroom representation.</string>
+    <string name="disclaimer_checkbox">I understand Wakil provides legal information, not formal legal counsel.</string>
+    <string name="continue_action">Continue</string>
+    <string name="sign_in_with_google">Continue with Google</string>
+    <string name="new_chat">New chat</string>
+    <string name="ask_wakil_placeholder">Ask Wakil...</string>
+    <string name="legal_disclaimer_footer">Wakil provides statutory legal reference under Nepalese law, not certified legal advocacy.</string>
+    <string name="admin_console_title">Wakil Admin</string>
+</resources>
