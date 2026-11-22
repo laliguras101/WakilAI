@@ -77,7 +77,76 @@ class WakilSprint1RobolectricTest {
     }
 
     @Test
+    fun testUS04_CredentialInputFieldInteractionsAndValidation() {
+        var submittedCredentials: Pair<String, String>? = null
+        composeTestRule.setContent {
+            WakilTheme {
+                WakilSignInContent(
+                    onSignInSubmit = { email, pass ->
+                        submittedCredentials = Pair(email, pass)
+                    }
+                )
+            }
+        }
+        composeTestRule.waitForIdle()
+
+        val emailPhoneInput = composeTestRule.onNodeWithTag("signin_email_phone_input")
+        val passwordInput = composeTestRule.onNodeWithTag("signin_password_input")
+        val submitButton = composeTestRule.onNodeWithTag("signin_submit_button")
+
+        // 1. Initial empty state: submit button disabled
+        emailPhoneInput.assertIsDisplayed()
+        passwordInput.assertIsDisplayed()
+        submitButton.assertIsDisplayed().assertIsNotEnabled()
+
+        // 2. Enter email only: submit button remains disabled
+        emailPhoneInput.performTextInput("advocate@wakil.np")
+        submitButton.assertIsNotEnabled()
+
+        // 3. Enter password: submit button becomes enabled
+        passwordInput.performTextInput("ValidPass123")
+        submitButton.assertIsEnabled()
+
+        // 4. Submit form: callback triggered with credentials
+        submitButton.performClick()
+        assert(submittedCredentials == Pair("advocate@wakil.np", "ValidPass123"))
+
+        // 5. Clear password: button disabled again
+        passwordInput.performTextClearance()
+        submitButton.assertIsNotEnabled()
+
+        // 6. Test +977 phone input format validation
+        emailPhoneInput.performTextClearance()
+        emailPhoneInput.performTextInput("+9779841234567")
+        passwordInput.performTextInput("SecurePhonePass")
+        submitButton.assertIsEnabled()
+    }
+
+    @Test
+    fun testUS07_SessionPersistenceAndTestModeState() {
+        // 1. Verify test guest mode launch
+        composeTestRule.setContent {
+            WakilTheme {
+                WakilAppRoot(initialTestGuestMode = true)
+            }
+        }
+        composeTestRule.waitForIdle()
+
+        // Verify authenticated workspace landing and test guest session
+        composeTestRule.onNodeWithText("Namaste").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Sprint 1 Deliverables Verified").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Guest User (Test Mode)", substring = true).assertIsDisplayed()
+
+        // Sign out returns to unauthenticated state
+        composeTestRule.onNodeWithTag("sprint1_sign_out_button").assertIsDisplayed().performClick()
+        composeTestRule.mainClock.advanceTimeBy(600L)
+        composeTestRule.waitForIdle()
+        composeTestRule.onNodeWithContentDescription("Wakil Legal Scales Emblem").assertExists()
+    }
+
+    @Test
     fun testSprint1EndToEndJourney() {
+        composeTestRule.mainClock.autoAdvance = false
         composeTestRule.setContent {
             WakilTheme {
                 WakilAppRoot(initialTestGuestMode = false)
@@ -90,26 +159,34 @@ class WakilSprint1RobolectricTest {
         composeTestRule.onNodeWithText("Legal Intelligence for Nepal").assertIsDisplayed()
         composeTestRule.onNodeWithText("CONSTITUTION • MULUKI CODES").assertIsDisplayed()
 
-        // 2. Verify Legal Disclaimer & Accordion (US-02)
-        composeTestRule.onNodeWithText("AI Legal Information").assertIsDisplayed()
-        composeTestRule.onNodeWithTag("scope_accordion_toggle").assertIsDisplayed().performClick()
+        // Auto-advance splash after 1500ms
+        composeTestRule.mainClock.advanceTimeBy(1600L)
         composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithText("Muluki Civil Code 2074", substring = true).assertIsDisplayed()
+        composeTestRule.mainClock.autoAdvance = true
+
+        // 2. Verify Legal Disclaimer & Accordion (US-02)
+        composeTestRule.onNodeWithText("AI Legal Information").performScrollTo().assertIsDisplayed()
+        composeTestRule.onNodeWithTag("scope_accordion_toggle").performScrollTo().assertIsDisplayed().performClick()
+        composeTestRule.waitForIdle()
+        composeTestRule.onNodeWithText("Muluki Civil Code 2074", substring = true).performScrollTo().assertIsDisplayed()
 
         // 3. Verify Agreement Checkbox enables Continue button (US-03)
         val continueButton = composeTestRule.onNodeWithTag("disclaimer_continue_button")
-        continueButton.assertIsDisplayed().assertIsEnabled()
-        composeTestRule.onNodeWithTag("disclaimer_checkbox").performClick()
+        continueButton.performScrollTo().assertIsDisplayed().assertIsEnabled() // default checked in content
+        composeTestRule.onNodeWithTag("disclaimer_checkbox").performScrollTo().performClick()
         composeTestRule.waitForIdle()
         continueButton.assertIsNotEnabled()
 
-        composeTestRule.onNodeWithTag("disclaimer_checkbox").performClick()
+        composeTestRule.onNodeWithTag("disclaimer_checkbox").performScrollTo().performClick()
         composeTestRule.waitForIdle()
-        continueButton.assertIsEnabled().performClick()
+        continueButton.performScrollTo().assertIsEnabled().performClick()
         composeTestRule.waitForIdle()
 
-        // 4. Verify Sign In screen & Google Sign In (US-06)
+        // 4. Verify Sign In screen & Inputs (US-04, US-05, US-06)
         composeTestRule.onNodeWithText("Sign in to Wakil").assertIsDisplayed()
+        composeTestRule.onNodeWithTag("signin_email_phone_input").assertIsDisplayed()
+        composeTestRule.onNodeWithTag("signin_password_input").assertIsDisplayed()
+        composeTestRule.onNodeWithTag("password_visibility_toggle").assertIsDisplayed()
         composeTestRule.onNodeWithTag("google_sign_in_button").assertIsDisplayed()
 
         // 5. Verify Skip Auth (Test Mode) (US-07)
@@ -122,7 +199,8 @@ class WakilSprint1RobolectricTest {
 
         // 7. Verify Sign Out
         composeTestRule.onNodeWithTag("sprint1_sign_out_button").assertIsDisplayed().performClick()
+        composeTestRule.mainClock.advanceTimeBy(600L)
         composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithText("AI Legal Information").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Wakil").assertIsDisplayed()
     }
 }
