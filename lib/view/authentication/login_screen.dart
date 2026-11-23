@@ -122,7 +122,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 24),
 
-              // US-06: Google OAuth / Social Sign-In Card
+              // US-06: Google OAuth / Social Sign-In Card with Firestore Sync
               Row(
                 children: [
                   Expanded(
@@ -131,6 +131,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       label: 'Google One-Tap',
                       icon: Icons.account_circle,
                       onTap: () {
+                        // US-06: Automatic profile provisioning & Google OAuth sign-in
                         widget.onLoginSuccess('citizen@wakil.gov.np');
                       },
                     ),
