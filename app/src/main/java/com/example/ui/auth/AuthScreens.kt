@@ -986,6 +986,18 @@ fun WakilSignInContent(
 // US-09: OTP Security – 6-Digit SMS Verification Card & Extreme Security
 // =========================================================================
 
+// Single-Use Token Invalidation Registry (Replay Attack Prevention)
+private val burnedOtpTokens = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
+
+fun isOtpTokenBurned(phoneNumber: String, otpCode: String): Boolean {
+    val normalizedPhone = phoneNumber.replace(" ", "").trim()
+    return burnedOtpTokens.contains("$normalizedPhone:$otpCode")
+}
+
+fun clearBurnedOtpTokens() {
+    burnedOtpTokens.clear()
+}
+
 @Composable
 fun WakilOtpVerificationCard(
     phoneNumber: String = "+977 9841234567",
@@ -1496,14 +1508,29 @@ fun verifyPhoneOtp(
     onSuccess: () -> Unit,
     onError: (String) -> Unit
 ) {
+    val normalizedPhone = phoneNumber.replace(" ", "").trim()
+    val tokenKey = "$normalizedPhone:$otpCode"
+
+    // 1. Single-Use Invalidation Check (Replay Prevention)
+    if (burnedOtpTokens.contains(tokenKey)) {
+        onError("This OTP code has already been used and invalidated (single-use security policy). Please request a fresh code.")
+        return
+    }
+
+    // 2. Format validation
     if (otpCode.length != 6 || !otpCode.all { it.isDigit() }) {
         onError("Please enter a valid 6-digit OTP code.")
         return
     }
+
+    // 3. Known test/invalid code rejection
     if (otpCode == "000000") {
         onError("Invalid OTP code. Please check your SMS and try again.")
         return
     }
+
+    // 4. Invalidate (Burn) the token immediately upon success
+    burnedOtpTokens.add(tokenKey)
     recordPhoneVerificationSuccess(phoneNumber)
     onSuccess()
 }
