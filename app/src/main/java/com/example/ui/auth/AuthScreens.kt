@@ -7,6 +7,27 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.border
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.PhoneAndroid
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -896,6 +917,309 @@ fun WakilSignInContent(
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.secondary
                 )
+            }
+        }
+    }
+}
+
+// =========================================================================
+// US-09: OTP Security – 6-Digit SMS Verification Card
+// =========================================================================
+
+@Composable
+fun WakilOtpVerificationCard(
+    phoneNumber: String = "+977 9841234567",
+    isVerifying: Boolean = false,
+    errorMessage: String? = null,
+    countdownSeconds: Int = 120,
+    onOtpComplete: (String) -> Unit = {},
+    onVerifyClick: (String) -> Unit = {},
+    onResendClick: () -> Unit = {},
+    onClearClick: () -> Unit = {},
+    modifier: Modifier = Modifier
+) {
+    val digits = remember { mutableStateListOf("", "", "", "", "", "") }
+    val focusRequesters = remember { List(6) { FocusRequester() } }
+    val focusStates = remember { mutableStateListOf(false, false, false, false, false, false) }
+    var secondsLeft by remember { mutableIntStateOf(countdownSeconds) }
+    var timerRunning by remember { mutableStateOf(countdownSeconds > 0) }
+
+    LaunchedEffect(timerRunning) {
+        if (timerRunning) {
+            while (secondsLeft > 0) {
+                delay(1000L)
+                secondsLeft--
+            }
+            timerRunning = false
+        }
+    }
+
+    Surface(
+        modifier = modifier
+            .fillMaxWidth()
+            .testTag("otp_verification_card"),
+        shape = RoundedCornerShape(24.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerLowest,
+        shadowElevation = 8.dp,
+        border = CardDefaults.outlinedCardBorder()
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            // Icon Badge
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primaryContainer),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.PhoneAndroid,
+                    contentDescription = "Phone Verification",
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+
+            // Title & Subtitle
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = "SMS Verification",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = "Enter the 6-digit code sent to",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.secondary
+                )
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = MaterialTheme.colorScheme.surfaceContainerLow,
+                    modifier = Modifier.padding(top = 4.dp)
+                ) {
+                    Text(
+                        text = phoneNumber,
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .padding(horizontal = 10.dp, vertical = 4.dp)
+                            .testTag("otp_phone_destination")
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            // 6 PIN Input Boxes (US-09)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                for (i in 0..5) {
+                    val isFocused = focusStates[i]
+                    val hasValue = digits[i].isNotEmpty()
+                    val hasError = errorMessage != null
+
+                    Box(
+                        modifier = Modifier
+                            .width(44.dp)
+                            .height(54.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(
+                                if (isFocused) MaterialTheme.colorScheme.surfaceContainerHighest
+                                else MaterialTheme.colorScheme.surfaceContainerLow
+                            )
+                            .border(
+                                width = if (isFocused) 2.dp else 1.dp,
+                                color = when {
+                                    hasError -> MaterialTheme.colorScheme.error
+                                    isFocused -> MaterialTheme.colorScheme.primary
+                                    hasValue -> MaterialTheme.colorScheme.outline
+                                    else -> MaterialTheme.colorScheme.outlineVariant
+                                },
+                                shape = RoundedCornerShape(12.dp)
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        BasicTextField(
+                            value = digits[i],
+                            onValueChange = { input ->
+                                val clean = input.filter { it.isDigit() }
+                                when {
+                                    clean.length > 1 -> {
+                                        val pasted = clean.take(6)
+                                        pasted.forEachIndexed { idx, ch ->
+                                            if (idx < 6) digits[idx] = ch.toString()
+                                        }
+                                        val next = (pasted.length).coerceAtMost(5)
+                                        focusRequesters[next].requestFocus()
+                                        if (digits.all { it.isNotEmpty() }) {
+                                            val fullCode = digits.joinToString("")
+                                            onOtpComplete(fullCode)
+                                        }
+                                    }
+                                    clean.isNotEmpty() -> {
+                                        digits[i] = clean.takeLast(1)
+                                        if (i < 5) {
+                                            focusRequesters[i + 1].requestFocus()
+                                        }
+                                        if (digits.all { it.isNotEmpty() }) {
+                                            val fullCode = digits.joinToString("")
+                                            onOtpComplete(fullCode)
+                                        }
+                                    }
+                                    else -> {
+                                        digits[i] = ""
+                                    }
+                                }
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 4.dp)
+                                .focusRequester(focusRequesters[i])
+                                .onFocusChanged { focusStates[i] = it.isFocused }
+                                .onKeyEvent { keyEvent ->
+                                    if (keyEvent.type == KeyEventType.KeyDown && keyEvent.key == Key.Backspace) {
+                                        if (digits[i].isEmpty() && i > 0) {
+                                            digits[i - 1] = ""
+                                            focusRequesters[i - 1].requestFocus()
+                                            true
+                                        } else {
+                                            false
+                                        }
+                                    } else {
+                                        false
+                                    }
+                                }
+                                .testTag("otp_input_box_$i"),
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Number,
+                                imeAction = if (i == 5) ImeAction.Done else ImeAction.Next
+                            ),
+                            singleLine = true,
+                            textStyle = MaterialTheme.typography.titleLarge.copy(
+                                textAlign = TextAlign.Center,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            ),
+                            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary)
+                        )
+                    }
+                }
+            }
+
+            // Error display
+            if (!errorMessage.isNullOrBlank()) {
+                Text(
+                    text = errorMessage,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.testTag("otp_error_message")
+                )
+            }
+
+            // Action Row: Clear Code (US-11) & Resend (US-10)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                TextButton(
+                    onClick = {
+                        digits.indices.forEach { digits[it] = "" }
+                        focusRequesters[0].requestFocus()
+                        onClearClick()
+                    },
+                    modifier = Modifier.testTag("clear_otp_button")
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Clear,
+                        contentDescription = null,
+                        modifier = Modifier.size(14.dp),
+                        tint = MaterialTheme.colorScheme.secondary
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "Clear Code",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
+
+                if (secondsLeft > 0) {
+                    val formattedTime = "%02d:%02d".format(secondsLeft / 60, secondsLeft % 60)
+                    Text(
+                        text = "Resend in $formattedTime",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.testTag("otp_countdown_timer")
+                    )
+                } else {
+                    TextButton(
+                        onClick = {
+                            secondsLeft = countdownSeconds.coerceAtLeast(120)
+                            timerRunning = true
+                            onResendClick()
+                        },
+                        modifier = Modifier.testTag("resend_otp_button")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "Resend via SMS",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+            }
+
+            // Verify Button
+            val isComplete = digits.all { it.isNotEmpty() }
+            Button(
+                onClick = { onVerifyClick(digits.joinToString("")) },
+                enabled = isComplete && !isVerifying,
+                shape = CircleShape,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
+                    .testTag("verify_otp_button")
+            ) {
+                if (isVerifying) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text(
+                        text = "Verify & Proceed",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
             }
         }
     }
