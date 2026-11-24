@@ -40,6 +40,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.VerifiedUser
@@ -985,16 +986,15 @@ fun WakilSignInContent(
 // US-09: OTP Security – 6-Digit SMS Verification Card & Extreme Security
 // =========================================================================
 
-// =========================================================================
-// US-09: OTP Security – 6-Digit SMS Verification Card
-// =========================================================================
-
 @Composable
 fun WakilOtpVerificationCard(
     phoneNumber: String = "+977 9841234567",
     isVerifying: Boolean = false,
     errorMessage: String? = null,
     countdownSeconds: Int = 120,
+    failedAttempts: Int = 0,
+    maxAttempts: Int = 3,
+    lockoutMinutes: Int = 15,
     onOtpComplete: (String) -> Unit = {},
     onVerifyClick: (String) -> Unit = {},
     onResendClick: () -> Unit = {},
@@ -1006,6 +1006,8 @@ fun WakilOtpVerificationCard(
     val focusStates = remember { mutableStateListOf(false, false, false, false, false, false) }
     var secondsLeft by remember { mutableIntStateOf(countdownSeconds) }
     var timerRunning by remember { mutableStateOf(countdownSeconds > 0) }
+
+    val isLockedOut = failedAttempts >= maxAttempts
 
     LaunchedEffect(timerRunning) {
         if (timerRunning) {
@@ -1038,13 +1040,16 @@ fun WakilOtpVerificationCard(
                 modifier = Modifier
                     .size(56.dp)
                     .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primaryContainer),
+                    .background(
+                        if (isLockedOut) MaterialTheme.colorScheme.errorContainer
+                        else MaterialTheme.colorScheme.primaryContainer
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Default.PhoneAndroid,
-                    contentDescription = "Phone Verification",
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    imageVector = if (isLockedOut) Icons.Default.Lock else Icons.Default.PhoneAndroid,
+                    contentDescription = if (isLockedOut) "Account Locked" else "Phone Verification",
+                    tint = if (isLockedOut) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier = Modifier.size(28.dp)
                 )
             }
@@ -1055,13 +1060,13 @@ fun WakilOtpVerificationCard(
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
-                    text = "SMS Verification",
+                    text = if (isLockedOut) "Account Locked Out" else "SMS Verification",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = if (isLockedOut) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = "Enter the 6-digit code sent to",
+                    text = if (isLockedOut) "Security lockout active. Anti-brute force triggered." else "Enter the 6-digit code sent to",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.secondary
                 )
@@ -1081,6 +1086,44 @@ fun WakilOtpVerificationCard(
                 }
             }
 
+            // Extreme Security: 3-Attempt Hard Lockout Alert Banner
+            if (isLockedOut) {
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("otp_lockout_warning"),
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.85f),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.error)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Lock,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.size(22.dp)
+                        )
+                        Column {
+                            Text(
+                                text = "Anti-Brute Force Protection Active",
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onErrorContainer
+                            )
+                            Text(
+                                text = "Maximum limit of $maxAttempts failed attempts reached. System locked for $lockoutMinutes minutes to protect your credentials. Tap 'Resend via SMS' to request a new code.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onErrorContainer
+                            )
+                        }
+                    }
+                }
+            }
+
             Spacer(modifier = Modifier.height(4.dp))
 
             // 6 PIN Input Boxes (US-09)
@@ -1092,7 +1135,7 @@ fun WakilOtpVerificationCard(
                 for (i in 0..5) {
                     val isFocused = focusStates[i]
                     val hasValue = digits[i].isNotEmpty()
-                    val hasError = errorMessage != null
+                    val hasError = errorMessage != null || isLockedOut
 
                     Box(
                         modifier = Modifier
@@ -1100,12 +1143,16 @@ fun WakilOtpVerificationCard(
                             .height(54.dp)
                             .clip(RoundedCornerShape(12.dp))
                             .background(
-                                if (isFocused) MaterialTheme.colorScheme.surfaceContainerHighest
-                                else MaterialTheme.colorScheme.surfaceContainerLow
+                                when {
+                                    isLockedOut -> MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.5f)
+                                    isFocused -> MaterialTheme.colorScheme.surfaceContainerHighest
+                                    else -> MaterialTheme.colorScheme.surfaceContainerLow
+                                }
                             )
                             .border(
-                                width = if (isFocused) 2.dp else 1.dp,
+                                width = if (isFocused && !isLockedOut) 2.dp else 1.dp,
                                 color = when {
+                                    isLockedOut -> MaterialTheme.colorScheme.error.copy(alpha = 0.5f)
                                     hasError -> MaterialTheme.colorScheme.error
                                     isFocused -> MaterialTheme.colorScheme.primary
                                     hasValue -> MaterialTheme.colorScheme.outline
@@ -1118,6 +1165,7 @@ fun WakilOtpVerificationCard(
                         BasicTextField(
                             value = digits[i],
                             onValueChange = { input ->
+                                if (isLockedOut) return@BasicTextField
                                 val clean = input.filter { it.isDigit() }
                                 when {
                                     clean.length > 1 -> {
@@ -1147,6 +1195,7 @@ fun WakilOtpVerificationCard(
                                     }
                                 }
                             },
+                            enabled = !isLockedOut && !isVerifying,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 4.dp)
@@ -1259,7 +1308,7 @@ fun WakilOtpVerificationCard(
             val isComplete = digits.all { it.isNotEmpty() }
             Button(
                 onClick = { onVerifyClick(digits.joinToString("")) },
-                enabled = isComplete && !isVerifying,
+                enabled = isComplete && !isVerifying && !isLockedOut,
                 shape = CircleShape,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary,
@@ -1297,6 +1346,7 @@ fun WakilOtpVerificationScreen(
 ) {
     var isVerifying by remember { mutableStateOf(false) }
     var otpError by remember { mutableStateOf<String?>(null) }
+    var failedAttempts by remember { mutableIntStateOf(0) }
     val scope = rememberCoroutineScope()
 
     Surface(
@@ -1364,6 +1414,9 @@ fun WakilOtpVerificationScreen(
                     phoneNumber = phoneNumber,
                     isVerifying = isVerifying,
                     errorMessage = otpError,
+                    failedAttempts = failedAttempts,
+                    maxAttempts = 3,
+                    lockoutMinutes = 15,
                     onOtpComplete = { code ->
                         scope.launch {
                             isVerifying = true
@@ -1379,6 +1432,7 @@ fun WakilOtpVerificationScreen(
                                 onError = { err ->
                                     isVerifying = false
                                     otpError = err
+                                    failedAttempts++
                                 }
                             )
                         }
@@ -1398,12 +1452,14 @@ fun WakilOtpVerificationScreen(
                                 onError = { err ->
                                     isVerifying = false
                                     otpError = err
+                                    failedAttempts++
                                 }
                             )
                         }
                     },
                     onResendClick = {
                         otpError = null
+                        failedAttempts = 0
                     },
                     onClearClick = {
                         otpError = null
