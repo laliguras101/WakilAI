@@ -135,9 +135,9 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
               ),
               const SizedBox(height: 16),
               const Text(
-                '6-Digit SMS Verification',
+                '6-Digit SMS Verification • फोन प्रमाणीकरण',
                 key: Key('otp_title'),
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
               ),
               const SizedBox(height: 6),
               Text(
