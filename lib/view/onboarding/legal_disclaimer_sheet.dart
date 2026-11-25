@@ -24,7 +24,8 @@ class _LegalDisclaimerSheetState extends State<LegalDisclaimerSheet> {
   void _validateAndProceed() {
     if (!_hasAgreed) {
       setState(() {
-        _errorMessage = 'You must agree to the Terms & Legal Disclaimer to continue.';
+        _errorMessage =
+            'You must agree to the Terms & Legal Disclaimer to continue.';
       });
       return;
     }
@@ -34,150 +35,254 @@ class _LegalDisclaimerSheetState extends State<LegalDisclaimerSheet> {
     widget.onAccepted();
   }
 
+  void _toggleAgreement(bool? value) {
+    setState(() {
+      _hasAgreed = value ?? false;
+      if (_hasAgreed) {
+        _errorMessage = null;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(24.0),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-          Center(
-            child: Container(
-              width: 48,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
+      decoration: BoxDecoration(
+        color: AppColors.surfacePure,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primaryBlack.withValues(alpha: 0.10),
+            blurRadius: 25,
+            spreadRadius: -5,
+            offset: const Offset(0, 20),
           ),
-          const SizedBox(height: 18),
-          const Row(
-            children: [
-              Icon(Icons.gavel, color: AppColors.primaryNavy, size: 28),
-              SizedBox(width: 10),
-              Text(
-                'AI Legal Information Notice',
-                key: Key('disclaimer_title'),
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            'Wakil uses advanced AI to help navigate Nepali legal statutes, court procedures, and legal documents. It is provided strictly for informational purposes and does not constitute formal legal counsel.',
-            style: TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.4),
-          ),
-          const SizedBox(height: 14),
-          // Collapsible Terms Accordion
-          InkWell(
-            key: const Key('scope_accordion_toggle'),
-            onTap: () {
-              setState(() {
-                _isScopeExpanded = !_isScopeExpanded;
-              });
-            },
-            borderRadius: BorderRadius.circular(10),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceBackground,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppColors.borderSubtle),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Scope & Limitations of Advice',
-                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
-                  ),
-                  Icon(
-                    _isScopeExpanded ? Icons.expand_less : Icons.expand_more,
-                    color: AppColors.primaryNavy,
-                  ),
-                ],
-              ),
-            ),
-          ),
-          if (_isScopeExpanded)
-            Container(
-              margin: const EdgeInsets.only(top: 8),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade50,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Text(
-                '• Grounded exclusively in Constitution of Nepal & Muluki Codes.\n• Real-time advocate consultation required for official court proceedings.\n• All communications are encrypted.',
-                style: TextStyle(fontSize: 12, color: AppColors.textSecondary, height: 1.5),
-              ),
-            ),
-          const SizedBox(height: 16),
-          // US-03: Mandatory Agreement Checkbox
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Checkbox(
-                key: const Key('consent_checkbox'),
-                value: _hasAgreed,
-                activeColor: AppColors.primaryNavy,
-                onChanged: (val) {
-                  setState(() {
-                    _hasAgreed = val ?? false;
-                    if (_hasAgreed) _errorMessage = null;
-                  });
-                },
-              ),
-              const Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(top: 12.0),
-                  child: Text(
-                    'I acknowledge that Wakil provides legal information only, and I agree to the Terms of Service.',
-                    style: TextStyle(fontSize: 12, color: AppColors.textPrimary),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          if (_errorMessage != null)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8.0, left: 12),
-              child: Text(
-                _errorMessage!,
-                style: const TextStyle(color: AppColors.crimsonRed, fontSize: 12),
-              ),
-            ),
-          const SizedBox(height: 8),
-          ElevatedButton(
-            key: const Key('accept_continue_button'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryNavy,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-            onPressed: _validateAndProceed,
-            child: const Text('Accept & Continue', style: TextStyle(fontWeight: FontWeight.bold)),
-          ),
-          const SizedBox(height: 8),
-          TextButton(
-            key: const Key('skip_auth_button'),
-            onPressed: widget.onSkip,
-            child: const Text('Skip Auth (Test Mode)', style: TextStyle(color: AppColors.textSecondary)),
+          BoxShadow(
+            color: AppColors.primaryBlack.withValues(alpha: 0.10),
+            blurRadius: 10,
+            spreadRadius: -6,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
+      child: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.outlineVariant.withValues(alpha: 0.60),
+                    borderRadius: BorderRadius.circular(9999),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'AI Legal Information',
+                key: Key('disclaimer_title'),
+                style: TextStyle(
+                  fontSize: 20,
+                  height: 26 / 20,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: -0.3,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 10),
+              const Text(
+                'Wakil uses advanced AI to help navigate Nepali legal statutes, court procedures, and legal documents. It is provided strictly for informational purposes and does not constitute formal legal counsel.',
+                style: TextStyle(
+                  fontSize: 14,
+                  height: 22.75 / 14,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 16),
+              // Collapsible Terms Accordion
+              Container(
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceLow,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    InkWell(
+                      key: const Key('scope_accordion_toggle'),
+                      onTap: () {
+                        setState(() {
+                          _isScopeExpanded = !_isScopeExpanded;
+                        });
+                      },
+                      borderRadius: BorderRadius.circular(16),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Expanded(
+                              child: Text(
+                                'Coverage & Statutory Scope',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 13,
+                                  height: 18 / 13,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                            ),
+                            Icon(
+                              _isScopeExpanded
+                                  ? Icons.expand_less
+                                  : Icons.expand_more,
+                              size: 20,
+                              color: AppColors.textSecondary,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    if (_isScopeExpanded)
+                      const Padding(
+                        padding: EdgeInsets.fromLTRB(16, 0, 16, 16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Divider(
+                              color: AppColors.surfaceHighest,
+                              height: 1,
+                              thickness: 1,
+                            ),
+                            SizedBox(height: 12),
+                            Text(
+                              '• Grounded exclusively in Constitution of Nepal & Muluki Codes.\n• Real-time advocate consultation required for official court proceedings.\n• All communications are encrypted.',
+                              style: TextStyle(
+                                fontSize: 13,
+                                height: 19 / 13,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              // US-03: Mandatory Agreement Checkbox
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Checkbox(
+                    key: const Key('consent_checkbox'),
+                    value: _hasAgreed,
+                    activeColor: AppColors.primaryBlack,
+                    checkColor: AppColors.surfacePure,
+                    side: const BorderSide(
+                      color: AppColors.textMuted,
+                      width: 1.5,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    onChanged: _toggleAgreement,
+                  ),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => _toggleAgreement(!_hasAgreed),
+                      child: const Padding(
+                        padding: EdgeInsets.only(top: 10.0),
+                        child: Text(
+                          'I understand Wakil provides legal information, not formal legal counsel.',
+                          style: TextStyle(
+                            fontSize: 13,
+                            height: 18 / 13,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              if (_errorMessage != null)
+                Container(
+                  margin: const EdgeInsets.only(top: 6, bottom: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.errorContainer,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.error_outline,
+                        size: 16,
+                        color: AppColors.crimsonError,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _errorMessage!,
+                          style: const TextStyle(
+                            color: AppColors.crimsonError,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton(
+                  key: const Key('accept_continue_button'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryBlack,
+                    foregroundColor: AppColors.surfacePure,
+                    elevation: 0,
+                    shape: const StadiumBorder(),
+                  ),
+                  onPressed: _validateAndProceed,
+                  child: const Text(
+                    'Accept & Continue',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextButton(
+                key: const Key('skip_auth_button'),
+                onPressed: widget.onSkip,
+                child: const Text(
+                  'Skip Auth (Test Mode)',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
