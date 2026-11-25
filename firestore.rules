@@ -1,0 +1,345 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Default-Deny Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Core Primitives
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // 1. ChatSession Validation Blueprint
+    function isValidChatSession(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 200 &&
+             data.lastMessage is string && data.lastMessage.size() <= 5000 &&
+             data.pinned is bool &&
+             data.language is string && (data.language == 'EN' || data.language == 'NP') &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    // 2. ChatMessage Validation Blueprint
+    function isValidChatMessage(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.chatId is string && data.chatId.size() >= 1 && data.chatId.size() <= 128 &&
+             data.sender is string && (data.sender == 'USER' || data.sender == 'ASSISTANT' || data.sender == 'VOICE') &&
+             data.content is string && data.content.size() >= 1 && data.content.size() <= 10000 &&
+             data.citations is list && data.citations.size() <= 10 &&
+             (data.citations.size() == 0 || (data.citations[0] is string && data.citations[0].size() <= 200)) &&
+             data.hasCanvasDoc is bool &&
+             data.canvasDocId is string && data.canvasDocId.size() <= 128 &&
+             data.flagged is bool &&
+             data.createdAt is timestamp && data.createdAt <= request.time;
+    }
+
+    // 3. LegalDocument Validation Blueprint
+    function isValidLegalDocument(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 200 &&
+             data.nepaliTitle is string && data.nepaliTitle.size() >= 1 && data.nepaliTitle.size() <= 200 &&
+             data.statuteBadge is string && data.statuteBadge.size() >= 1 && data.statuteBadge.size() <= 200 &&
+             data.landlordName is string && data.landlordName.size() >= 1 && data.landlordName.size() <= 200 &&
+             data.tenantName is string && data.tenantName.size() >= 1 && data.tenantName.size() <= 200 &&
+             data.propertyAddress is string && data.propertyAddress.size() >= 1 && data.propertyAddress.size() <= 500 &&
+             data.monthlyRentNpr is int && data.monthlyRentNpr >= 0 && data.monthlyRentNpr <= 100000000 &&
+             data.securityDepositNpr is int && data.securityDepositNpr >= 0 && data.securityDepositNpr <= 100000000 &&
+             data.durationText is string && data.durationText.size() >= 1 && data.durationText.size() <= 2000 &&
+             data.utilitiesText is string && data.utilitiesText.size() >= 1 && data.utilitiesText.size() <= 2000 &&
+             data.disputeText is string && data.disputeText.size() >= 1 && data.disputeText.size() <= 2000 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    // 4. CorpusDocument Validation Blueprint
+    function isValidCorpusDocument(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.fileName is string && data.fileName.size() >= 1 && data.fileName.size() <= 200 &&
+             data.category is string && (data.category == 'CODES' || data.category == 'NKP' || data.category == 'DIRECTIVES') &&
+             data.subtitle is string && data.subtitle.size() >= 1 && data.subtitle.size() <= 300 &&
+             data.chunksCount is int && data.chunksCount >= 0 && data.chunksCount <= 1000000 &&
+             data.fileSizeLabel is string && data.fileSizeLabel.size() >= 1 && data.fileSizeLabel.size() <= 50 &&
+             data.status is string && (data.status == 'INDEXED' || data.status == 'SYNCING') &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    // 5. ManagedUser Validation Blueprint
+    function isValidManagedUser(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.fullName is string && data.fullName.size() >= 1 && data.fullName.size() <= 200 &&
+             data.email is string && data.email.size() >= 3 && data.email.size() <= 200 &&
+             data.phone is string && data.phone.size() >= 3 && data.phone.size() <= 50 &&
+             data.accountStatus is string && (data.accountStatus == 'ACTIVE' || data.accountStatus == 'SUSPENDED' || data.accountStatus == 'ADMIN') &&
+             data.joinedLabel is string && data.joinedLabel.size() >= 1 && data.joinedLabel.size() <= 100 &&
+             data.queriesCount is int && data.queriesCount >= 0 && data.queriesCount <= 10000000 &&
+             data.moderationNote is string && data.moderationNote.size() <= 500 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    // 6. FlaggedAudit Validation Blueprint
+    function isValidFlaggedAudit(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.userLabel is string && data.userLabel.size() >= 1 && data.userLabel.size() <= 200 &&
+             data.flagType is string && data.flagType.size() >= 1 && data.flagType.size() <= 100 &&
+             data.severityLabel is string && data.severityLabel.size() >= 1 && data.severityLabel.size() <= 100 &&
+             data.userQuery is string && data.userQuery.size() >= 1 && data.userQuery.size() <= 2000 &&
+             data.aiResponse is string && data.aiResponse.size() >= 1 && data.aiResponse.size() <= 5000 &&
+             data.alertTitle is string && data.alertTitle.size() >= 1 && data.alertTitle.size() <= 200 &&
+             data.alertDetail is string && data.alertDetail.size() >= 1 && data.alertDetail.size() <= 1000 &&
+             data.ragSource is string && data.ragSource.size() >= 1 && data.ragSource.size() <= 200 &&
+             data.resolved is bool &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    // 7. SystemConfig Validation Blueprint
+    function isValidSystemConfig(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.systemPrompt is string && data.systemPrompt.size() >= 1 && data.systemPrompt.size() <= 5000 &&
+             data.foundationModel is string && data.foundationModel.size() >= 1 && data.foundationModel.size() <= 100 &&
+             (data.temperature is float || data.temperature is int) && data.temperature >= 0.0 && data.temperature <= 1.0 &&
+             data.maxOutputTokens is int && data.maxOutputTokens >= 128 && data.maxOutputTokens <= 8192 &&
+             data.preferredLanguage is string && (data.preferredLanguage == 'EN' || data.preferredLanguage == 'NP') &&
+             data.disclaimerAccepted is bool &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    // User-scoped Collections Hierarchy
+    match /users/{userId} {
+
+      // 1. Chats Collection
+      match /chats/{chatId} {
+        allow get: if isOwner(userId) && isValidId(userId) && isValidId(chatId);
+        allow list: if isOwner(userId);
+
+        allow create: if isOwner(userId) &&
+                         isValidId(userId) &&
+                         isValidId(chatId) &&
+                         incoming().keys().hasAll(['userId', 'title', 'lastMessage', 'pinned', 'language', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['userId', 'title', 'lastMessage', 'pinned', 'language', 'createdAt', 'updatedAt']) &&
+                         isValidChatSession(incoming());
+
+        allow update: if (
+          isSignedIn() && isValidChatSession(incoming()) &&
+          isOwner(userId) && isValidId(userId) && isValidId(chatId) &&
+          incoming().userId == existing().userId &&
+          incoming().createdAt == existing().createdAt && (
+            // Action: Update chat metadata or pin status
+            incoming().diff(existing()).affectedKeys().hasOnly(['title', 'lastMessage', 'pinned', 'language', 'updatedAt'])
+          )
+        );
+
+        allow delete: if isOwner(userId) && isValidId(userId) && isValidId(chatId);
+
+        // 2. Chat Messages Subcollection
+        match /messages/{messageId} {
+          allow get: if isOwner(userId) && isValidId(userId) && isValidId(chatId) && isValidId(messageId);
+          allow list: if isOwner(userId);
+
+          allow create: if isOwner(userId) &&
+                           isValidId(userId) &&
+                           isValidId(chatId) &&
+                           isValidId(messageId) &&
+                           incoming().chatId == chatId &&
+                           incoming().keys().hasAll(['userId', 'chatId', 'sender', 'content', 'citations', 'hasCanvasDoc', 'canvasDocId', 'flagged', 'createdAt']) &&
+                           incoming().keys().hasOnly(['userId', 'chatId', 'sender', 'content', 'citations', 'hasCanvasDoc', 'canvasDocId', 'flagged', 'createdAt']) &&
+                           isValidChatMessage(incoming()) &&
+                           exists(/databases/$(database)/documents/users/$(userId)/chats/$(chatId));
+
+          allow update: if (
+            isSignedIn() && isValidChatMessage(incoming()) &&
+            isOwner(userId) && isValidId(userId) && isValidId(chatId) && isValidId(messageId) &&
+            incoming().userId == existing().userId &&
+            incoming().chatId == existing().chatId &&
+            incoming().createdAt == existing().createdAt && (
+              // Action: Flag message or attach canvas document
+              incoming().diff(existing()).affectedKeys().hasOnly(['flagged', 'hasCanvasDoc', 'canvasDocId', 'content'])
+            )
+          );
+
+          allow delete: if isOwner(userId) && isValidId(userId) && isValidId(chatId) && isValidId(messageId);
+        }
+      }
+
+      // 3. Legal Documents Canvas Collection
+      match /documents/{docId} {
+        allow get: if isOwner(userId) && isValidId(userId) && isValidId(docId);
+        allow list: if isOwner(userId);
+
+        allow create: if isOwner(userId) &&
+                         isValidId(userId) &&
+                         isValidId(docId) &&
+                         incoming().keys().hasAll([
+                           'userId', 'title', 'nepaliTitle', 'statuteBadge', 'landlordName', 'tenantName',
+                           'propertyAddress', 'monthlyRentNpr', 'securityDepositNpr', 'durationText',
+                           'utilitiesText', 'disputeText', 'createdAt', 'updatedAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'userId', 'title', 'nepaliTitle', 'statuteBadge', 'landlordName', 'tenantName',
+                           'propertyAddress', 'monthlyRentNpr', 'securityDepositNpr', 'durationText',
+                           'utilitiesText', 'disputeText', 'createdAt', 'updatedAt'
+                         ]) &&
+                         isValidLegalDocument(incoming());
+
+        allow update: if (
+          isSignedIn() && isValidLegalDocument(incoming()) &&
+          isOwner(userId) && isValidId(userId) && isValidId(docId) &&
+          incoming().userId == existing().userId &&
+          incoming().createdAt == existing().createdAt && (
+            // Action: Edit canvas clauses or amounts
+            incoming().diff(existing()).affectedKeys().hasOnly([
+              'title', 'nepaliTitle', 'statuteBadge', 'landlordName', 'tenantName',
+              'propertyAddress', 'monthlyRentNpr', 'securityDepositNpr', 'durationText',
+              'utilitiesText', 'disputeText', 'updatedAt'
+            ])
+          )
+        );
+
+        allow delete: if isOwner(userId) && isValidId(userId) && isValidId(docId);
+      }
+
+      // 4. Legal Corpus Indexer Collection
+      match /corpus/{corpusId} {
+        allow get: if isOwner(userId) && isValidId(userId) && isValidId(corpusId);
+        allow list: if isOwner(userId);
+
+        allow create: if isOwner(userId) &&
+                         isValidId(userId) &&
+                         isValidId(corpusId) &&
+                         incoming().keys().hasAll(['userId', 'fileName', 'category', 'subtitle', 'chunksCount', 'fileSizeLabel', 'status', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['userId', 'fileName', 'category', 'subtitle', 'chunksCount', 'fileSizeLabel', 'status', 'createdAt', 'updatedAt']) &&
+                         isValidCorpusDocument(incoming());
+
+        allow update: if (
+          isSignedIn() && isValidCorpusDocument(incoming()) &&
+          isOwner(userId) && isValidId(userId) && isValidId(corpusId) &&
+          incoming().userId == existing().userId &&
+          incoming().createdAt == existing().createdAt && (
+            // Action: Re-index statute or update chunk status
+            incoming().diff(existing()).affectedKeys().hasOnly(['status', 'chunksCount', 'subtitle', 'updatedAt'])
+          )
+        );
+
+        allow delete: if isOwner(userId) && isValidId(userId) && isValidId(corpusId);
+      }
+
+      // 5. Managed Users Admin Collection
+      match /managed_users/{managedUserId} {
+        allow get: if isOwner(userId) && isValidId(userId) && isValidId(managedUserId);
+        allow list: if isOwner(userId);
+
+        allow create: if isOwner(userId) &&
+                         isValidId(userId) &&
+                         isValidId(managedUserId) &&
+                         incoming().keys().hasAll(['userId', 'fullName', 'email', 'phone', 'accountStatus', 'joinedLabel', 'queriesCount', 'moderationNote', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['userId', 'fullName', 'email', 'phone', 'accountStatus', 'joinedLabel', 'queriesCount', 'moderationNote', 'createdAt', 'updatedAt']) &&
+                         isValidManagedUser(incoming());
+
+        allow update: if (
+          isSignedIn() && isValidManagedUser(incoming()) &&
+          isOwner(userId) && isValidId(userId) && isValidId(managedUserId) &&
+          incoming().userId == existing().userId &&
+          incoming().createdAt == existing().createdAt && (
+            // Action: Change role/suspension status or moderation note
+            incoming().diff(existing()).affectedKeys().hasOnly(['accountStatus', 'moderationNote', 'queriesCount', 'updatedAt'])
+          )
+        );
+
+        allow delete: if isOwner(userId) && isValidId(userId) && isValidId(managedUserId);
+      }
+
+      // 6. Flagged Audits Collection
+      match /flagged_audits/{auditId} {
+        allow get: if isOwner(userId) && isValidId(userId) && isValidId(auditId);
+        allow list: if isOwner(userId);
+
+        allow create: if isOwner(userId) &&
+                         isValidId(userId) &&
+                         isValidId(auditId) &&
+                         incoming().keys().hasAll([
+                           'userId', 'userLabel', 'flagType', 'severityLabel', 'userQuery',
+                           'aiResponse', 'alertTitle', 'alertDetail', 'ragSource', 'resolved',
+                           'createdAt', 'updatedAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'userId', 'userLabel', 'flagType', 'severityLabel', 'userQuery',
+                           'aiResponse', 'alertTitle', 'alertDetail', 'ragSource', 'resolved',
+                           'createdAt', 'updatedAt'
+                         ]) &&
+                         isValidFlaggedAudit(incoming());
+
+        allow update: if (
+          isSignedIn() && isValidFlaggedAudit(incoming()) &&
+          isOwner(userId) && isValidId(userId) && isValidId(auditId) &&
+          incoming().userId == existing().userId &&
+          incoming().createdAt == existing().createdAt && (
+            // Action: Resolve or reopen audit item
+            incoming().diff(existing()).affectedKeys().hasOnly(['resolved', 'updatedAt'])
+          )
+        );
+
+        allow delete: if isOwner(userId) && isValidId(userId) && isValidId(auditId);
+      }
+
+      // 7. System Config & Preferences Collection
+      match /settings/{settingId} {
+        allow get: if isOwner(userId) && isValidId(userId) && isValidId(settingId);
+        allow list: if isOwner(userId);
+
+        allow create: if isOwner(userId) &&
+                         isValidId(userId) &&
+                         isValidId(settingId) &&
+                         incoming().keys().hasAll([
+                           'userId', 'systemPrompt', 'foundationModel', 'temperature',
+                           'maxOutputTokens', 'preferredLanguage', 'disclaimerAccepted',
+                           'createdAt', 'updatedAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'userId', 'systemPrompt', 'foundationModel', 'temperature',
+                           'maxOutputTokens', 'preferredLanguage', 'disclaimerAccepted',
+                           'createdAt', 'updatedAt'
+                         ]) &&
+                         isValidSystemConfig(incoming());
+
+        allow update: if (
+          isSignedIn() && isValidSystemConfig(incoming()) &&
+          isOwner(userId) && isValidId(userId) && isValidId(settingId) &&
+          incoming().userId == existing().userId &&
+          incoming().createdAt == existing().createdAt && (
+            // Action: Update system prompt, hyperparameters, language, or disclaimer consent
+            incoming().diff(existing()).affectedKeys().hasOnly([
+              'systemPrompt', 'foundationModel', 'temperature',
+              'maxOutputTokens', 'preferredLanguage', 'disclaimerAccepted', 'updatedAt'
+            ])
+          )
+        );
+
+        allow delete: if isOwner(userId) && isValidId(userId) && isValidId(settingId);
+      }
+    }
+  }
+}

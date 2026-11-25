@@ -1,0 +1,427 @@
+{
+  "entities": {
+    "ChatSession": {
+      "title": "ChatSession",
+      "description": "A legal inquiry conversation thread owned by an authenticated user.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "UID of the authenticated user."
+        },
+        "title": {
+          "type": "string",
+          "description": "Conversation title."
+        },
+        "lastMessage": {
+          "type": "string",
+          "description": "Preview of the most recent message."
+        },
+        "pinned": {
+          "type": "boolean",
+          "description": "Whether this conversation is pinned in the slide-out drawer."
+        },
+        "language": {
+          "type": "string",
+          "enum": ["EN", "NP"],
+          "description": "Active language code for the chat session."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of creation (FieldValue.serverTimestamp())."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last update (FieldValue.serverTimestamp())."
+        }
+      },
+      "required": ["userId", "title", "lastMessage", "pinned", "language", "createdAt", "updatedAt"]
+    },
+    "ChatMessage": {
+      "title": "ChatMessage",
+      "description": "A single message turn within a legal inquiry conversation.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "UID of the authenticated owner."
+        },
+        "chatId": {
+          "type": "string",
+          "description": "ID of the parent ChatSession."
+        },
+        "sender": {
+          "type": "string",
+          "enum": ["USER", "ASSISTANT", "VOICE"],
+          "description": "Message origin role."
+        },
+        "content": {
+          "type": "string",
+          "description": "Message text body."
+        },
+        "citations": {
+          "type": "array",
+          "description": "Bounded list of statutory citation IDs referenced in the message."
+        },
+        "hasCanvasDoc": {
+          "type": "boolean",
+          "description": "Whether this message links to a drafted legal canvas document."
+        },
+        "canvasDocId": {
+          "type": "string",
+          "description": "ID of the linked LegalDocument if hasCanvasDoc is true, or empty string."
+        },
+        "flagged": {
+          "type": "boolean",
+          "description": "Whether this assistant response was flagged for legal audit."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of message creation (FieldValue.serverTimestamp())."
+        }
+      },
+      "required": ["userId", "chatId", "sender", "content", "citations", "hasCanvasDoc", "canvasDocId", "flagged", "createdAt"]
+    },
+    "LegalDocument": {
+      "title": "LegalDocument",
+      "description": "A bilingual legal agreement drafted and edited in the Wakil Document Canvas.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "UID of the authenticated user."
+        },
+        "title": {
+          "type": "string",
+          "description": "English title of the legal instrument."
+        },
+        "nepaliTitle": {
+          "type": "string",
+          "description": "Devanagari title of the legal instrument."
+        },
+        "statuteBadge": {
+          "type": "string",
+          "description": "Statutory compliance badge text."
+        },
+        "landlordName": {
+          "type": "string",
+          "description": "First party / Landlord name."
+        },
+        "tenantName": {
+          "type": "string",
+          "description": "Second party / Tenant name."
+        },
+        "propertyAddress": {
+          "type": "string",
+          "description": "Premises location description."
+        },
+        "monthlyRentNpr": {
+          "type": "integer",
+          "description": "Monthly rental amount in NPR."
+        },
+        "securityDepositNpr": {
+          "type": "integer",
+          "description": "Refundable security deposit in NPR."
+        },
+        "durationText": {
+          "type": "string",
+          "description": "Clause 3 duration and renewal terms."
+        },
+        "utilitiesText": {
+          "type": "string",
+          "description": "Clause 4 utilities and maintenance obligations."
+        },
+        "disputeText": {
+          "type": "string",
+          "description": "Clause 5 dispute settlement clause."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of creation (FieldValue.serverTimestamp())."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last update (FieldValue.serverTimestamp())."
+        }
+      },
+      "required": [
+        "userId",
+        "title",
+        "nepaliTitle",
+        "statuteBadge",
+        "landlordName",
+        "tenantName",
+        "propertyAddress",
+        "monthlyRentNpr",
+        "securityDepositNpr",
+        "durationText",
+        "utilitiesText",
+        "disputeText",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "CorpusDocument": {
+      "title": "CorpusDocument",
+      "description": "An indexed Nepal Law statute, code, or Supreme Court NKP volume in the Admin Knowledge Base.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "UID of the authenticated user."
+        },
+        "fileName": {
+          "type": "string",
+          "description": "PDF or DOCX document filename."
+        },
+        "category": {
+          "type": "string",
+          "enum": ["CODES", "NKP", "DIRECTIVES"],
+          "description": "Corpus classification category."
+        },
+        "subtitle": {
+          "type": "string",
+          "description": "Summary metadata of the legal source."
+        },
+        "chunksCount": {
+          "type": "integer",
+          "description": "Number of neural retrieval vector chunks."
+        },
+        "fileSizeLabel": {
+          "type": "string",
+          "description": "Human-readable file size."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["INDEXED", "SYNCING"],
+          "description": "Indexing pipeline state."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of creation (FieldValue.serverTimestamp())."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last index sync (FieldValue.serverTimestamp())."
+        }
+      },
+      "required": ["userId", "fileName", "category", "subtitle", "chunksCount", "fileSizeLabel", "status", "createdAt", "updatedAt"]
+    },
+    "ManagedUser": {
+      "title": "ManagedUser",
+      "description": "A user record managed in the Wakil Admin directory.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "UID of the authenticated admin owner."
+        },
+        "fullName": {
+          "type": "string",
+          "description": "Full name of the registered user."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the user."
+        },
+        "phone": {
+          "type": "string",
+          "description": "Nepali phone number (+977)."
+        },
+        "accountStatus": {
+          "type": "string",
+          "enum": ["ACTIVE", "SUSPENDED", "ADMIN"],
+          "description": "Current role/moderation status."
+        },
+        "joinedLabel": {
+          "type": "string",
+          "description": "Formatted join date string."
+        },
+        "queriesCount": {
+          "type": "integer",
+          "description": "Total legal queries executed."
+        },
+        "moderationNote": {
+          "type": "string",
+          "description": "Optional moderation warning note (or empty string)."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of creation (FieldValue.serverTimestamp())."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last update (FieldValue.serverTimestamp())."
+        }
+      },
+      "required": ["userId", "fullName", "email", "phone", "accountStatus", "joinedLabel", "queriesCount", "moderationNote", "createdAt", "updatedAt"]
+    },
+    "FlaggedAudit": {
+      "title": "FlaggedAudit",
+      "description": "A flagged AI legal response queued for safety and statutory accuracy moderation.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "UID of the authenticated user."
+        },
+        "userLabel": {
+          "type": "string",
+          "description": "Identifier and timestamp label for the query author."
+        },
+        "flagType": {
+          "type": "string",
+          "description": "Category of the flag (e.g., Hallucination, Over-generous Guarantee)."
+        },
+        "severityLabel": {
+          "type": "string",
+          "description": "Severity classification (e.g., High Severity, Statutory Conflict)."
+        },
+        "userQuery": {
+          "type": "string",
+          "description": "Original legal question asked by the user."
+        },
+        "aiResponse": {
+          "type": "string",
+          "description": "Flagged response snippet generated by the model."
+        },
+        "alertTitle": {
+          "type": "string",
+          "description": "Short title of the statutory discrepancy."
+        },
+        "alertDetail": {
+          "type": "string",
+          "description": "Explanation of the statutory violation or repealed section."
+        },
+        "ragSource": {
+          "type": "string",
+          "description": "Statutory citation used during RAG retrieval."
+        },
+        "resolved": {
+          "type": "boolean",
+          "description": "Whether the audit item has been resolved and dismissed."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of creation (FieldValue.serverTimestamp())."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of resolution update (FieldValue.serverTimestamp())."
+        }
+      },
+      "required": [
+        "userId",
+        "userLabel",
+        "flagType",
+        "severityLabel",
+        "userQuery",
+        "aiResponse",
+        "alertTitle",
+        "alertDetail",
+        "ragSource",
+        "resolved",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "SystemConfig": {
+      "title": "SystemConfig",
+      "description": "RAG pipeline hyperparameters, system prompt directives, and user preferences.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "UID of the authenticated user."
+        },
+        "systemPrompt": {
+          "type": "string",
+          "description": "Master legal system prompt injected into Gemini calls."
+        },
+        "foundationModel": {
+          "type": "string",
+          "description": "Selected Gemini model display label."
+        },
+        "temperature": {
+          "type": "number",
+          "description": "Generation temperature between 0.0 and 1.0."
+        },
+        "maxOutputTokens": {
+          "type": "integer",
+          "description": "Maximum output token limit."
+        },
+        "preferredLanguage": {
+          "type": "string",
+          "enum": ["EN", "NP"],
+          "description": "UI and statutory response language preference."
+        },
+        "disclaimerAccepted": {
+          "type": "boolean",
+          "description": "Whether the user accepted the statutory legal disclaimer."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of creation (FieldValue.serverTimestamp())."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last update (FieldValue.serverTimestamp())."
+        }
+      },
+      "required": [
+        "userId",
+        "systemPrompt",
+        "foundationModel",
+        "temperature",
+        "maxOutputTokens",
+        "preferredLanguage",
+        "disclaimerAccepted",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/chats/{chatId}": {
+      "schema": { "$ref": "#/entities/ChatSession" },
+      "description": "User-scoped legal inquiry chat threads."
+    },
+    "/users/{userId}/chats/{chatId}/messages/{messageId}": {
+      "schema": { "$ref": "#/entities/ChatMessage" },
+      "description": "Messages inside a user-scoped chat thread."
+    },
+    "/users/{userId}/documents/{docId}": {
+      "schema": { "$ref": "#/entities/LegalDocument" },
+      "description": "User-scoped drafted legal agreements in Wakil Canvas."
+    },
+    "/users/{userId}/corpus/{corpusId}": {
+      "schema": { "$ref": "#/entities/CorpusDocument" },
+      "description": "User-scoped indexed Nepal Law statutes and NKP volumes."
+    },
+    "/users/{userId}/managed_users/{managedUserId}": {
+      "schema": { "$ref": "#/entities/ManagedUser" },
+      "description": "User-scoped directory of managed users for the Admin console."
+    },
+    "/users/{userId}/flagged_audits/{auditId}": {
+      "schema": { "$ref": "#/entities/FlaggedAudit" },
+      "description": "User-scoped queue of flagged AI legal responses for moderation."
+    },
+    "/users/{userId}/settings/{settingId}": {
+      "schema": { "$ref": "#/entities/SystemConfig" },
+      "description": "User-scoped system prompt and inference configuration."
+    }
+  }
+}
