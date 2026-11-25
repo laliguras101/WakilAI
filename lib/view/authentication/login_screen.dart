@@ -8,6 +8,8 @@ class LoginScreen extends StatefulWidget {
   final VoidCallback onToForgotPassword;
   final Function(String email) onLoginSuccess;
   final VoidCallback onSkipAuth;
+  final bool initialRememberDevice;
+  final ValueChanged<bool>? onRememberDeviceChanged;
 
   const LoginScreen({
     super.key,
@@ -15,6 +17,8 @@ class LoginScreen extends StatefulWidget {
     required this.onToForgotPassword,
     required this.onLoginSuccess,
     required this.onSkipAuth,
+    this.initialRememberDevice = true,
+    this.onRememberDeviceChanged,
   });
 
   @override
@@ -25,8 +29,22 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _identifierController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
-  bool _rememberDevice = true;
+  late bool _rememberDevice;
   String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _rememberDevice = widget.initialRememberDevice;
+  }
+
+  @override
+  void didUpdateWidget(covariant LoginScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialRememberDevice != widget.initialRememberDevice) {
+      _rememberDevice = widget.initialRememberDevice;
+    }
+  }
 
   void _handleSignIn() {
     final input = _identifierController.text.trim();
@@ -52,13 +70,21 @@ class _LoginScreenState extends State<LoginScreen> {
       });
     }
 
+    widget.onRememberDeviceChanged?.call(_rememberDevice);
     widget.onLoginSuccess(input);
   }
 
+  void _handleGoogleSignIn() {
+    widget.onRememberDeviceChanged?.call(_rememberDevice);
+    widget.onLoginSuccess('citizen.google@wakil.ai');
+  }
+
   void _toggleRememberDevice(bool? value) {
+    final nextValue = value ?? widget.initialRememberDevice;
     setState(() {
-      _rememberDevice = value ?? true;
+      _rememberDevice = nextValue;
     });
+    widget.onRememberDeviceChanged?.call(nextValue);
   }
 
   InputDecoration _buildFieldDecoration({
@@ -384,7 +410,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     key: const Key('google_signin_button'),
                     label: 'Continue with Google',
                     icon: Icons.account_circle,
-                    onTap: () => widget.onLoginSuccess('citizen.google@wakil.ai'),
+                    onTap: _handleGoogleSignIn,
                   ),
                   const SizedBox(height: 12),
 

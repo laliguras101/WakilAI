@@ -46,6 +46,7 @@ class _WakilAppState extends State<WakilApp> {
   late final AuthService _authService;
   late final bool _ownsAuthService;
   late AppRouteState _currentRoute;
+  late bool _rememberDevice;
   String _userIdentifier = 'citizen@wakil.gov.np';
   String _registeredPhone = '+977 9841234567';
   Future<void> _pendingAuthTask = Future<void>.value();
@@ -56,6 +57,10 @@ class _WakilAppState extends State<WakilApp> {
     _ownsAuthService = widget.authService == null;
     _authService = widget.authService ?? AuthService();
     _currentRoute = widget.initialRoute;
+    _rememberDevice = _authService.sessionService.rememberDeviceEnabled;
+    if (widget.initialRoute == AppRouteState.splash) {
+      _runBackground(_restoreRememberedSessionIfSplash);
+    }
   }
 
   @override
@@ -79,6 +84,29 @@ class _WakilAppState extends State<WakilApp> {
     unawaited(_pendingAuthTask);
   }
 
+  Future<void> _restoreRememberedSessionIfSplash() async {
+    final restored = await _authService.restoreSession();
+    if (!mounted) {
+      return;
+    }
+    final record = restored?.session;
+    final syncedRememberDevice =
+        _authService.sessionService.rememberDeviceEnabled;
+    if (record != null &&
+        record.rememberDevice &&
+        _currentRoute == AppRouteState.splash) {
+      setState(() {
+        _rememberDevice = record.rememberDevice;
+      });
+      _routeToWorkspace(record.identifier);
+    } else if (_rememberDevice != syncedRememberDevice &&
+        _currentRoute != AppRouteState.login) {
+      setState(() {
+        _rememberDevice = syncedRememberDevice;
+      });
+    }
+  }
+
   void _routeToWorkspace(String identifier) {
     final isAdmin =
         _authService.roleRoutingService.isAdminIdentifier(identifier);
@@ -94,6 +122,7 @@ class _WakilAppState extends State<WakilApp> {
     String identifier, {
     required String authProvider,
   }) {
+    final rememberDevice = _rememberDevice;
     _routeToWorkspace(identifier);
     final cleanId = identifier.trim();
     if (cleanId.isEmpty) {
@@ -102,7 +131,9 @@ class _WakilAppState extends State<WakilApp> {
     _runBackground(() async {
       if (_authService.currentUser?.identifier.toLowerCase() ==
               cleanId.toLowerCase() &&
-          _authService.sessionService.isAuthenticated) {
+          _authService.sessionService.isAuthenticated &&
+          _authService.sessionService.activeSession?.rememberDevice ==
+              rememberDevice) {
         return;
       }
       final role = _authService.roleRoutingService.resolveRoleSync(cleanId);
@@ -115,7 +146,7 @@ class _WakilAppState extends State<WakilApp> {
         phoneNumber: normalizedPhone,
         role: role,
         authProvider: authProvider,
-        rememberDevice: _authService.sessionService.rememberDeviceEnabled,
+        rememberDevice: rememberDevice,
       );
     });
   }
@@ -291,6 +322,10 @@ class _WakilAppState extends State<WakilApp> {
 
       case AppRouteState.login:
         return LoginScreen(
+          initialRememberDevice: _rememberDevice,
+          onRememberDeviceChanged: (value) {
+            _rememberDevice = value;
+          },
           onToRegistration: () {
             setState(() {
               _currentRoute = AppRouteState.registration;
@@ -302,7 +337,11 @@ class _WakilAppState extends State<WakilApp> {
             });
           },
           onLoginSuccess: (email) {
-            _handleAuthenticatedNavigation(email, authProvider: 'password');
+            _handleAuthenticatedNavigation(
+              email,
+              authProvider:
+                  email == 'citizen.google@wakil.ai' ? 'google.com' : 'password',
+            );
           },
           onSkipAuth: () {
             _enterTestMode();
@@ -350,6 +389,9 @@ class _WakilAppState extends State<WakilApp> {
           },
           onResetSuccess: (identity, newPassword, revokeAllSessions) {
             setState(() {
+              if (revokeAllSessions) {
+                _rememberDevice = false;
+              }
               _currentRoute = AppRouteState.login;
             });
             _runBackground(() async {
