@@ -1203,6 +1203,238 @@ void main() {
       },
     );
 
+    testWidgets(
+      'US-07: Unchecking Remember Device in LoginScreen propagates rememberDevice=false and skips restart restore',
+      (WidgetTester tester) async {
+        configureViewport(tester, testViewport);
+        final sharedStore = InMemoryKeyValueStore();
+        final auth1 = AuthService.localFallback(
+          sessionService: SessionService(store: sharedStore),
+        );
+        addTearDown(auth1.dispose);
+
+        await pumpAndVerifyNoOverflow(
+          tester,
+          WakilApp(
+            initialRoute: AppRouteState.login,
+            authService: auth1,
+          ),
+        );
+
+        final checkboxFinder = find.byKey(
+          const Key('remember_device_checkbox'),
+        );
+        expect(tester.widget<Checkbox>(checkboxFinder).value, isTrue);
+
+        await tester.ensureVisible(checkboxFinder);
+        await tester.tap(checkboxFinder);
+        await tester.pumpAndSettle();
+        expect(tester.widget<Checkbox>(checkboxFinder).value, isFalse);
+
+        await tester.enterText(
+          find.byKey(const Key('email_phone_input')),
+          'bhugol.gautam1@gmail.com',
+        );
+        await tester.enterText(
+          find.byKey(const Key('password_input')),
+          'WakilPass123!',
+        );
+        final submitFinder = find.byKey(const Key('sign_in_submit_button'));
+        await tester.ensureVisible(submitFinder);
+        await tester.tap(submitFinder);
+        await tester.pumpAndSettle();
+
+        expect(
+          find.byKey(const Key('citizen_workspace_screen')),
+          findsOneWidget,
+        );
+        expect(auth1.sessionService.isAuthenticated, isTrue);
+        expect(auth1.sessionService.rememberDeviceEnabled, isFalse);
+        expect(auth1.sessionService.activeSession?.rememberDevice, isFalse);
+        expect(
+          await sharedStore.read(SessionService.sessionRecordKey),
+          isNull,
+        );
+
+        // Simulated restart with fresh AuthService on same store stays on splash.
+        final auth2 = AuthService.localFallback(
+          sessionService: SessionService(store: sharedStore),
+        );
+        addTearDown(auth2.dispose);
+
+        await pumpAndVerifyNoOverflow(
+          tester,
+          WakilApp(
+            key: const ValueKey('restarted_app'),
+            initialRoute: AppRouteState.splash,
+            authService: auth2,
+          ),
+        );
+        expect(find.byKey(const Key('splash_emblem')), findsOneWidget);
+        expect(
+          find.byKey(const Key('citizen_workspace_screen')),
+          findsNothing,
+        );
+        expect(await auth2.restoreSession(), isNull);
+      },
+    );
+
+    testWidgets(
+      'US-13 -> US-07: Global Session Revocation leaves LoginScreen checkbox unchecked until re-checked',
+      (WidgetTester tester) async {
+        configureViewport(tester, testViewport);
+        final sharedStore = InMemoryKeyValueStore();
+        final authService = AuthService.localFallback(
+          sessionService: SessionService(store: sharedStore),
+        );
+        addTearDown(authService.dispose);
+
+        await authService.signInWithIdentifierAndPassword(
+          identifier: 'bhugol.gautam1@gmail.com',
+          password: 'OldPassword123!',
+          rememberDevice: true,
+        );
+        expect(authService.sessionService.rememberDeviceEnabled, isTrue);
+
+        await pumpAndVerifyNoOverflow(
+          tester,
+          WakilApp(
+            initialRoute: AppRouteState.passwordRecovery,
+            authService: authService,
+          ),
+        );
+
+        await tester.enterText(
+          find.byKey(const Key('recovery_identity_input')),
+          'bhugol.gautam1@gmail.com',
+        );
+        await tester.tap(
+          find.byKey(const Key('recovery_verify_identity_button')),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.enterText(
+          find.byKey(const Key('recovery_new_password_input')),
+          'KathmanduLegal98#',
+        );
+        await tester.pumpAndSettle();
+
+        final resetSubmitFinder = find.byKey(
+          const Key('recovery_submit_button'),
+        );
+        await tester.ensureVisible(resetSubmitFinder);
+        await tester.tap(resetSubmitFinder);
+        await tester.pumpAndSettle();
+
+        expect(find.text('Welcome to Wakil'), findsOneWidget);
+        expect(authService.sessionService.revocationEpoch, 1);
+        expect(authService.sessionService.isAuthenticated, isFalse);
+
+        final checkboxFinder = find.byKey(
+          const Key('remember_device_checkbox'),
+        );
+        expect(tester.widget<Checkbox>(checkboxFinder).value, isFalse);
+
+        // Re-check Remember Device and sign in -> persists rememberDevice = true
+        await tester.ensureVisible(checkboxFinder);
+        await tester.tap(checkboxFinder);
+        await tester.pumpAndSettle();
+        expect(tester.widget<Checkbox>(checkboxFinder).value, isTrue);
+
+        await tester.enterText(
+          find.byKey(const Key('email_phone_input')),
+          'bhugol.gautam1@gmail.com',
+        );
+        await tester.enterText(
+          find.byKey(const Key('password_input')),
+          'KathmanduLegal98#',
+        );
+        final signInFinder = find.byKey(const Key('sign_in_submit_button'));
+        await tester.ensureVisible(signInFinder);
+        await tester.tap(signInFinder);
+        await tester.pumpAndSettle();
+
+        expect(
+          find.byKey(const Key('citizen_workspace_screen')),
+          findsOneWidget,
+        );
+        expect(authService.sessionService.rememberDeviceEnabled, isTrue);
+        expect(authService.sessionService.activeSession?.rememberDevice, isTrue);
+        expect(
+          await sharedStore.read(SessionService.sessionRecordKey),
+          isNotNull,
+        );
+      },
+    );
+
+    testWidgets(
+      'US-07 & US-14: WakilApp splash auto-restores remembered Citizen & Admin sessions to matching workspace',
+      (WidgetTester tester) async {
+        configureViewport(tester, testViewport);
+
+        // 1. Citizen persisted session restores directly to MainWorkspaceScreen.
+        final citizenStore = InMemoryKeyValueStore();
+        final citizenWriter = SessionService(store: citizenStore);
+        await citizenWriter.saveSession(
+          userId: 'uid_citizen_saved',
+          identifier: 'bhugol.gautam1@gmail.com',
+          email: 'bhugol.gautam1@gmail.com',
+          role: WakilUserRole.citizen,
+          rememberDevice: true,
+        );
+        await citizenWriter.dispose();
+
+        final citizenAuth = AuthService.localFallback(
+          sessionService: SessionService(store: citizenStore),
+        );
+        addTearDown(citizenAuth.dispose);
+
+        await pumpAndVerifyNoOverflow(
+          tester,
+          WakilApp(
+            initialRoute: AppRouteState.splash,
+            authService: citizenAuth,
+          ),
+        );
+        expect(
+          find.byKey(const Key('citizen_workspace_screen')),
+          findsOneWidget,
+        );
+        expect(find.textContaining('bhugol.gautam1@gmail.com'), findsOneWidget);
+
+        // 2. Admin persisted session restores directly to AdminWorkspaceScreen.
+        final adminStore = InMemoryKeyValueStore();
+        final adminWriter = SessionService(store: adminStore);
+        await adminWriter.saveSession(
+          userId: 'uid_admin_saved',
+          identifier: 'admin.bhugol@wakil.gov.np',
+          email: 'admin.bhugol@wakil.gov.np',
+          role: WakilUserRole.admin,
+          rememberDevice: true,
+        );
+        await adminWriter.dispose();
+
+        final adminAuth = AuthService.localFallback(
+          sessionService: SessionService(store: adminStore),
+        );
+        addTearDown(adminAuth.dispose);
+
+        await pumpAndVerifyNoOverflow(
+          tester,
+          WakilApp(
+            key: const ValueKey('admin_restore_app'),
+            initialRoute: AppRouteState.splash,
+            authService: adminAuth,
+          ),
+        );
+        expect(find.byKey(const Key('admin_workspace_screen')), findsOneWidget);
+        expect(
+          find.textContaining('admin.bhugol@wakil.gov.np'),
+          findsOneWidget,
+        );
+      },
+    );
+
     for (final vp in viewports) {
       testWidgets(
         'MainWorkspaceScreen prompt chip tap & zero overflow (${vp.label})',
