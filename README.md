@@ -60,7 +60,8 @@ WakilAI/
 │           └── admin_workspace_screen.dart # US-14 System Administrator workspace
 └── test/
     ├── widget_test.dart                    # Sprint 1–2 user story widget test suite (US-01–US-14)
-    └── dynamic_user_flow_test.dart         # End-to-end CUJ widget verification journeys
+    ├── dynamic_user_flow_test.dart         # End-to-end CUJ widget verification journeys
+    └── phase0_alignment_test.dart          # Phase 0 design-token, service, and responsive flow alignment tests
 ```
 
 ---
@@ -182,10 +183,10 @@ Wakil is designed to run cleanly without crashing when `google-services.json` or
 | **US-01** | Onboarding Splash | `SplashScreen` displays the Scales of Justice emblem (`Key('splash_emblem')`), `'Wakil'` title (`Key('app_title')`), `'Legal Intelligence for Nepal'` tagline (`Key('app_tagline')`), statutory scope pill (`CONSTITUTION • MULUKI CODES`), `'Get Started'` CTA (`Key('get_started_button')`), and `'Explore in Test Mode'` (`Key('skip_to_test_mode')`). |
 | **US-02** | Legal Disclaimer Sheet | `LegalDisclaimerSheet` presents the informational-only AI legal notice (`Key('disclaimer_title')`) and an expandable statutory scope accordion (`Key('scope_accordion_toggle')`) referencing the Constitution of Nepal and Muluki Codes. |
 | **US-03** | Consent Validation | Mandatory `Checkbox` (`Key('consent_checkbox')`, defaulting to `false`) blocks `'Accept & Continue'` (`Key('accept_continue_button')`) with `'You must agree to the Terms & Legal Disclaimer to continue.'` until checked; consent persistence is supported in `SessionService` (`hasAcceptedDisclaimer` / `setDisclaimerAccepted`). |
-| **US-04** | Sign-In Form | `LoginScreen` validates email or Nepali mobile (`+977`) identifier (`Key('email_phone_input')`) and password (`Key('password_input')`, minimum 6 characters), backed by `AuthService.signInWithIdentifierAndPassword`. |
+| **US-04** | Sign-In Form | `LoginScreen` validates non-empty email/phone (`Key('email_phone_input')`) and password (`Key('password_input')`, minimum 6 characters); `AuthService.signInWithIdentifierAndPassword` enforces email/`+977` phone format and credential authentication. |
 | **US-05** | Password Visibility Toggle | Interactive eye-icon toggle (`Key('password_visibility_toggle')` on `LoginScreen`, `Key('registration_password_toggle')` on `RegistrationScreen`, `Key('recovery_password_toggle')` on `PasswordRecoveryScreen`). |
 | **US-06** | Google One-Tap / OAuth | `SocialMediaCard` (`Key('google_signin_button')`) triggers `AuthService.signInWithGoogle` (live credential flow when Firebase is configured, deterministic fallback otherwise). |
-| **US-07** | **Remember Device & Test Mode** | `LoginScreen` includes the `'Remember Device'` checkbox (`Key('remember_device_checkbox')`, persisted via `SessionService.saveSession` and `restoreRememberedSession`) alongside `'Skip Auth (Test Mode)'` (`Key('skip_auth_test_mode_button')`), enabling immediate workspace entry without live credentials. |
+| **US-07** | **Remember Device & Test Mode** | `LoginScreen` provides the `'Remember Device'` checkbox (`Key('remember_device_checkbox')`) alongside `'Skip Auth (Test Mode)'` (`Key('skip_auth_test_mode_button')`). `SessionService` (`saveSession`, `restoreRememberedSession`, `getRememberDevicePreference`) and `AuthService` (`restoreSession`, `enterTestMode`) back encrypted device persistence and immediate non-remembered test-mode entry, while `WakilApp` persists session state via `SessionService` and routes directly to the workspace. |
 | **US-08** | User Registration | `RegistrationScreen` validates Full Name, email format, and 10-digit Nepali mobile numbers starting with `98` or `97` (normalized to `+977XXXXXXXXXX` via `AuthService.normalizeNepaliPhone`), plus password length, before advancing to OTP verification. |
 | **US-09** | 6-Digit SMS OTP Card | `OtpVerificationScreen` renders an elevated OTP card (`Key('otp_card')`) with 6 auto-advancing single-digit fields (`Key('otp_box_0')`–`Key('otp_box_5')`) and `Verify & Proceed` (`Key('otp_verify_button')`). |
 | **US-10** | Countdown Timer & Resend | Live 120-second countdown (`Key('otp_timer_text')`) disables `'Resend via SMS'` (`Key('otp_resend_button')`) until reaching `00:00`, then resets the timer and shows `'A new 6-digit security OTP was sent to ...'`. |
@@ -212,15 +213,19 @@ flutter pub get
 flutter analyze
 ```
 
-Verified clean: `No issues found!`.
+Verified clean (`No issues found!`) across the workspace.
 
-### 3. Automated Widget & User-Journey Tests
+### 3. Automated Widget, Service & Alignment Tests
 
 ```bash
 flutter test
 ```
 
-Runs all 9 tests across `test/widget_test.dart` and `test/dynamic_user_flow_test.dart` (verified: `9/9` passing).
+Executes the full automated suite across all three test files:
+
+- `test/widget_test.dart` — Sprint 1–2 user story widget tests (`US-01`–`US-14`)
+- `test/dynamic_user_flow_test.dart` — End-to-end Critical User Journey (CUJ) flows
+- `test/phase0_alignment_test.dart` — Phase 0 design-token assertions, service unit tests (`FirebaseBootstrap`, `SessionService`, `RoleRoutingService`, `AuthService.localFallback`), and responsive (`390x844` & `800x600`) widget alignment tests
 
 ### 4. Firestore Security Rules Emulator Tests (`firestore.test.js`, port `8085`)
 
