@@ -39,10 +39,42 @@ app.*.symbols
 # Obfuscation related
 app.*.map.json
 
-# Android Studio will place build artifacts here
+# Android Studio / Gradle / native build artifacts
 /android/app/debug
 /android/app/profile
 /android/app/release
+.gradle/
+.cxx/
+captures/
+local.properties
+**/local.properties
 
 # Widget Preview related
 .widget_preview/
+
+# Environment & Secrets (never commit real credentials)
+.env
+.env.*
+!.env.example
+*.jks
+*.keystore
+key.properties
+**/key.properties
+*service-account*.json
+*service_account*.json
+*-firebase-adminsdk-*.json
+serviceAccountKey.json
+*.pem
+*.p12
+*.secret
+
+# Firebase local state & emulator/debug logs
+.firebase/
+firebase-debug.log*
+firestore-debug.log*
+ui-debug.log*
+*-debug.log
+*-debug.log.*
+
+# Node dependencies (if running firestore.test.js locally)
+node_modules/
