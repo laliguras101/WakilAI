@@ -47,7 +47,7 @@ void main() {
 
       final googleBtn = find.byKey(const Key('google_signin_button'));
       expect(googleBtn, findsOneWidget);
-      expect(find.text('Google One-Tap'), findsOneWidget);
+      expect(find.text('Continue with Google'), findsOneWidget);
 
       // Tap Google One-Tap advances to Main Workspace
       await tester.tap(googleBtn);

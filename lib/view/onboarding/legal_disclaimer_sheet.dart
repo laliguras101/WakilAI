@@ -68,7 +68,7 @@ class _LegalDisclaimerSheetState extends State<LegalDisclaimerSheet> {
       child: SafeArea(
         top: false,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -83,29 +83,29 @@ class _LegalDisclaimerSheetState extends State<LegalDisclaimerSheet> {
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 12),
               const Text(
                 'AI Legal Information • कानुनी सूचना',
                 key: Key('disclaimer_title'),
                 style: TextStyle(
-                  fontSize: 20,
-                  height: 26 / 20,
+                  fontSize: 19,
+                  height: 24 / 19,
                   fontWeight: FontWeight.w500,
                   letterSpacing: -0.3,
                   color: AppColors.textPrimary,
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 6),
               const Text(
-                'Wakil uses advanced AI to help navigate Nepali legal statutes, court procedures, and legal documents. It is provided strictly for informational purposes and does not constitute formal legal counsel.\n(वकिलले नेपाली ऐन, नियम र कार्यविधि बुझ्न सहयोग गर्दछ। यो केवल सूचनामूलक प्रयोजनका लागि हो।)',
+                'Wakil uses advanced AI to help navigate Nepali legal statutes, court procedures, and legal documents. It is provided strictly for informational purposes and does not constitute formal legal counsel. (वकिलले नेपाली ऐन, नियम र कार्यविधि बुझ्न सहयोग गर्दछ।)',
                 style: TextStyle(
-                  fontSize: 14,
-                  height: 22.75 / 14,
+                  fontSize: 13,
+                  height: 19 / 13,
                   fontWeight: FontWeight.w400,
                   color: AppColors.textSecondary,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 10),
               // Collapsible Terms Accordion
               Container(
                 decoration: BoxDecoration(
@@ -124,7 +124,7 @@ class _LegalDisclaimerSheetState extends State<LegalDisclaimerSheet> {
                       },
                       borderRadius: BorderRadius.circular(16),
                       child: Padding(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -152,7 +152,7 @@ class _LegalDisclaimerSheetState extends State<LegalDisclaimerSheet> {
                     ),
                     if (_isScopeExpanded)
                       const Padding(
-                        padding: EdgeInsets.fromLTRB(16, 0, 16, 16),
+                        padding: EdgeInsets.fromLTRB(14, 0, 14, 10),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -161,12 +161,12 @@ class _LegalDisclaimerSheetState extends State<LegalDisclaimerSheet> {
                               height: 1,
                               thickness: 1,
                             ),
-                            SizedBox(height: 12),
+                            SizedBox(height: 8),
                             Text(
                               '• Grounded exclusively in Constitution of Nepal & Muluki Codes (मुलुकी संहिता).\n• Under the Legal Practitioners Act 2050 (नेपाल कानुन व्यवसायी परिषद ऐन, २०५०), this AI provides statutory legal reference, not certified courtroom advocacy.\n• Real-time advocate consultation required for official court proceedings.\n• All communications are encrypted.',
                               style: TextStyle(
-                                fontSize: 13,
-                                height: 19 / 13,
+                                fontSize: 12,
+                                height: 1.35,
                                 color: AppColors.textSecondary,
                               ),
                             ),
@@ -176,7 +176,7 @@ class _LegalDisclaimerSheetState extends State<LegalDisclaimerSheet> {
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 8),
               // US-03: Mandatory Agreement Checkbox
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -199,12 +199,12 @@ class _LegalDisclaimerSheetState extends State<LegalDisclaimerSheet> {
                     child: GestureDetector(
                       onTap: () => _toggleAgreement(!_hasAgreed),
                       child: const Padding(
-                        padding: EdgeInsets.only(top: 10.0),
+                        padding: EdgeInsets.only(top: 6.0),
                         child: Text(
-                          'I understand Wakil provides legal information, not formal legal counsel.\n(म स्वीकार गर्दछु कि वकिलले कानुनी जानकारी मात्र प्रदान गर्दछ।)',
+                          'I understand Wakil provides legal information, not formal legal counsel. (म स्वीकार गर्दछु कि वकिलले कानुनी जानकारी मात्र प्रदान गर्दछ।)',
                           style: TextStyle(
-                            fontSize: 13,
-                            height: 18 / 13,
+                            fontSize: 12,
+                            height: 1.35,
                             color: AppColors.textPrimary,
                           ),
                         ),
