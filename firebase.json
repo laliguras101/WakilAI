@@ -1,14 +1,33 @@
 {
   "firestore": [
     {
-      "database": "ai-studio-android-wakil-77bdd334-2113-412c-86b4-be03ef0044f1",
-      "rules": "firestore.rules"
+      "database": "(default)",
+      "location": "asia-south1",
+      "rules": "firestore.rules",
+      "indexes": "firestore.indexes.json"
     }
   ],
+  "auth": {
+    "providers": {
+      "emailPassword": true,
+      "googleSignIn": {
+        "oAuthBrandDisplayName": "Wakil AI",
+        "supportEmail": "bhugol.gautam1@gmail.com",
+        "authorizedRedirectUris": [
+          "https://wakil-3a91d.firebaseapp.com/__/auth/handler",
+          "http://localhost:4000"
+        ]
+      }
+    }
+  },
   "emulators": {
     "firestore": {
       "host": "127.0.0.1",
       "port": 8085
+    },
+    "auth": {
+      "host": "127.0.0.1",
+      "port": 9099
     },
     "ui": {
       "enabled": false

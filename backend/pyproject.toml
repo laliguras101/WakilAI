@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=75.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wakilai-backend"
+version = "0.1.0"
+description = "WakilAI Nepalese Legal Hybrid RAG & Universal AI Gateway Backend"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.34.0",
+    "sse-starlette>=2.2.0",
+    "pydantic>=2.10.0",
+    "pydantic-settings>=2.7.0",
+    "python-multipart>=0.0.20",
+    "httpx>=0.28.0",
+    "tenacity>=9.0.0",
+    "qdrant-client>=1.13.0",
+    "rank-bm25>=0.2.2",
+    "numpy>=2.1.0",
+    "pdfplumber>=0.11.0",
+    "pypdf>=5.0.0",
+    "python-docx>=1.1.0",
+    "beautifulsoup4>=4.12.0",
+    "lxml>=5.3.0",
+    "google-genai>=1.0.0",
+    "openai>=1.60.0",
+    "ddgs>=7.0.0",
+    "fastembed>=0.9.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*"]

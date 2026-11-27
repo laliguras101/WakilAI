@@ -1,0 +1,253 @@
+{
+  "version": 1,
+  "documents": {
+    "doc-33acfd967e7bb9f6": {
+      "doc_id": "doc-33acfd967e7bb9f6",
+      "title": "The Constitution of Nepal",
+      "act_name": "Constitution of Nepal 2072",
+      "category": "CONSTITUTION",
+      "language": "EN",
+      "file_name": "Constitution-of-Nepal.md",
+      "source_path": "D:\\DATA For WAkil\\law_commission_md\\Constitution\\Constitution-of-Nepal.md",
+      "source_url": null,
+      "sha256": "33acfd967e7bb9f697aae7a893859e80ad1bf07fb1a94b9f112277b571aa6fbb",
+      "file_size_bytes": 351096,
+      "page_count": 1,
+      "chunks_count": 636,
+      "status": "INDEXED",
+      "ingested_at": "2026-11-26T01:57:16.975718Z",
+      "metadata": {}
+    },
+    "doc-7b5b8a166dd9e449": {
+      "doc_id": "doc-7b5b8a166dd9e449",
+      "title": "मुलुकी देवानी संहिता, २०७४",
+      "act_name": "Muluki Civil Code 2074 (मुलुकी देवानी संहिता)",
+      "category": "CODES",
+      "language": "NE",
+      "file_name": "मुलुकी-देवानी-संहिता-ऐन-२०७४.pdf",
+      "source_path": "D:\\DATA For WAkil\\law_commission_pdfs\\Acts\\मुलुकी-देवानी-संहिता-ऐन-२०७४.pdf",
+      "source_url": null,
+      "sha256": "7b5b8a166dd9e449746b9bbb401001620ac0da4724b6961d105d6287164c8b65",
+      "file_size_bytes": 2919965,
+      "page_count": 252,
+      "chunks_count": 786,
+      "status": "INDEXED",
+      "ingested_at": "2026-11-26T01:58:29.363752Z",
+      "metadata": {
+        "preeti_pages": 252,
+        "pypdf_fallback_pages": 0
+      }
+    },
+    "doc-bf27e22ed8b40900": {
+      "doc_id": "doc-bf27e22ed8b40900",
+      "title": ", मलु कु ी अपराध संहिता २०७४",
+      "act_name": "Muluki Criminal Code 2074 (मुलुकी अपराध संहिता)",
+      "category": "CODES",
+      "language": "NE",
+      "file_name": "मुलुकी-अपराध-संहिता-२०७४.pdf",
+      "source_path": "D:\\DATA For WAkil\\law_commission_pdfs\\Acts\\मुलुकी-अपराध-संहिता-२०७४.pdf",
+      "source_url": null,
+      "sha256": "bf27e22ed8b40900c79a297c77c5ad9467e86af27d17e6927d2d0bd486be1cb8",
+      "file_size_bytes": 2058876,
+      "page_count": 142,
+      "chunks_count": 325,
+      "status": "INDEXED",
+      "ingested_at": "2026-11-26T01:59:16.782394Z",
+      "metadata": {
+        "preeti_pages": 142,
+        "pypdf_fallback_pages": 0
+      }
+    },
+    "doc-18f028302d15210d": {
+      "doc_id": "doc-18f028302d15210d",
+      "title": "Labour Act, 2017 (2074)",
+      "act_name": "Labour Act 2074",
+      "category": "CODES",
+      "language": "BILINGUAL",
+      "file_name": "The-Labor-Act-2017-2074.md",
+      "source_path": "D:\\DATA For WAkil\\law_commission_md\\Acts\\The-Labor-Act-2017-2074.md",
+      "source_url": null,
+      "sha256": "18f028302d15210d4e0669df299aae63c25af4b6714507c0a4b41f9683adf8ad",
+      "file_size_bytes": 737597,
+      "page_count": 1,
+      "chunks_count": 386,
+      "status": "INDEXED",
+      "ingested_at": "2026-11-26T01:59:32.160155Z",
+      "metadata": {}
+    },
+    "doc-a4b2129a9e0c7d70": {
+      "doc_id": "doc-a4b2129a9e0c7d70",
+      "title": "श्रम ऐन, २०७४",
+      "act_name": "Labour Act 2074 (श्रम ऐन)",
+      "category": "CODES",
+      "language": "NE",
+      "file_name": "श्रम-ऐन-२०७४.pdf",
+      "source_path": "D:\\DATA For WAkil\\law_commission_pdfs\\Acts\\श्रम-ऐन-२०७४.pdf",
+      "source_url": null,
+      "sha256": "a4b2129a9e0c7d70bc17a57b2352833ccbd86dc1c660a6b22e0054e7a5ae7349",
+      "file_size_bytes": 1686083,
+      "page_count": 91,
+      "chunks_count": 220,
+      "status": "INDEXED",
+      "ingested_at": "2026-11-26T02:00:03.374458Z",
+      "metadata": {
+        "preeti_pages": 0,
+        "pypdf_fallback_pages": 0
+      }
+    },
+    "doc-ac7991ca3efd5da6": {
+      "doc_id": "doc-ac7991ca3efd5da6",
+      "title": ", विद्यतु ीय (इलेक्ट्रोनिक) कारोबार ऐि २०६३",
+      "act_name": "Electronic Transactions Act 2063 (विद्युतीय कारोबार ऐन)",
+      "category": "CODES",
+      "language": "NE",
+      "file_name": "विद्युतीय-इलेक्ट्रोनिक-कारोबार-ऐन-२०६३.pdf",
+      "source_path": "D:\\DATA For WAkil\\law_commission_pdfs\\Acts\\विद्युतीय-इलेक्ट्रोनिक-कारोबार-ऐन-२०६३.pdf",
+      "source_url": null,
+      "sha256": "ac7991ca3efd5da69999a934f31eafb40511fdd01c6f1c53b332b565a78ed76e",
+      "file_size_bytes": 946440,
+      "page_count": 36,
+      "chunks_count": 91,
+      "status": "INDEXED",
+      "ingested_at": "2026-11-26T02:00:17.179977Z",
+      "metadata": {
+        "preeti_pages": 3,
+        "pypdf_fallback_pages": 0
+      }
+    },
+    "doc-fe7da5c74c20bdea": {
+      "doc_id": "doc-fe7da5c74c20bdea",
+      "title": "कम्पनी ऐन, २०६३ (Companies Act, 2063)",
+      "act_name": "Companies Act 2063",
+      "category": "CODES",
+      "language": "BILINGUAL",
+      "file_name": "कम्पनी-ऐन-२०६३.md",
+      "source_path": "D:\\DATA For WAkil\\law_commission_md\\Acts\\कम्पनी-ऐन-२०६३.md",
+      "source_url": null,
+      "sha256": "fe7da5c74c20bdea70ab184524e54c36a095ccafd3f8b2ae134cb2b0e083e81b",
+      "file_size_bytes": 1860149,
+      "page_count": 1,
+      "chunks_count": 1069,
+      "status": "INDEXED",
+      "ingested_at": "2026-11-26T02:00:59.840403Z",
+      "metadata": {}
+    },
+    "doc-fe71b4a2553e4d43": {
+      "doc_id": "doc-fe71b4a2553e4d43",
+      "title": "Consumer Protection Act, 2075 (उपभोक्ता संरक्षण ऐन, २०७५)",
+      "act_name": "Consumer Protection Act 2075",
+      "category": "CODES",
+      "language": "BILINGUAL",
+      "file_name": "The-Consumer-Protection-Act-2075-2018.md",
+      "source_path": "D:\\DATA For WAkil\\law_commission_md\\Acts\\The-Consumer-Protection-Act-2075-2018.md",
+      "source_url": null,
+      "sha256": "fe71b4a2553e4d43c576f876894bcdd1b08b36b5c0c57c052cc142558001d8e2",
+      "file_size_bytes": 274382,
+      "page_count": 1,
+      "chunks_count": 143,
+      "status": "INDEXED",
+      "ingested_at": "2026-11-26T02:01:06.173684Z",
+      "metadata": {}
+    },
+    "doc-bde028141c350f19": {
+      "doc_id": "doc-bde028141c350f19",
+      "title": ", प्रमाण ऐन २०३१",
+      "act_name": "Evidence Act 2031 (प्रमाण ऐन, २०३१)",
+      "category": "CODES",
+      "language": "NE",
+      "file_name": "प्रमाण-ऐन-२०३१.pdf",
+      "source_path": "D:\\DATA For WAkil\\law_commission_pdfs\\Acts\\प्रमाण-ऐन-२०३१.pdf",
+      "source_url": null,
+      "sha256": "bde028141c350f195de0be0321cf9ff99f499b0377593377016fac6d654abfc1",
+      "file_size_bytes": 1140450,
+      "page_count": 28,
+      "chunks_count": 61,
+      "status": "INDEXED",
+      "ingested_at": "2026-11-26T02:01:15.658980Z",
+      "metadata": {
+        "preeti_pages": 11,
+        "pypdf_fallback_pages": 0
+      }
+    },
+    "doc-5110a034bd4e37d5": {
+      "doc_id": "doc-5110a034bd4e37d5",
+      "title": "नेपालको संविधान (दोस्रो संशोधन सहित) — Nepali Unicode",
+      "act_name": "नेपालको संविधान, २०७२ (Constitution of Nepal)",
+      "category": "CONSTITUTION",
+      "language": "NE",
+      "file_name": "Constitution_of_Nepal_2081_NE.pdf",
+      "source_path": "D:\\Codes\\WakilAI\\backend\\data\\raw\\Constitution_of_Nepal_2081_NE.pdf",
+      "source_url": "https://giwmscdnone.gov.np/media/pdf_upload/%E0%A4%A8%E0%A5%87%E0%A4%AA%E0%A4%BE%E0%A4%B2%E0%A4%95%E0%A5%8B%20%E0%A4%B8_%E0%A4%82%E0%A4%B5%E0%A4%BF%E0%A4%A7%E0%A4%BE%E0%A4%A8%20unicode%20%E0%A4%AD%E0%A4%BE%E0%A4%A6%E0%A5%8D%E0%A4%B0%20%E0%A5%A8%E0%A5%A6%E0%A5%AE%E0%A5%A7_mtbuyjt.pdf",
+      "sha256": "5110a034bd4e37d5970a9515a4f9d937614b47509082642542aa3c004d1ff6b4",
+      "file_size_bytes": 3209892,
+      "page_count": 183,
+      "chunks_count": 472,
+      "status": "INDEXED",
+      "ingested_at": "2026-11-26T02:02:20.708584Z",
+      "metadata": {
+        "preeti_pages": 182,
+        "pypdf_fallback_pages": 0
+      }
+    },
+    "doc-4ca35f6458d8c076": {
+      "doc_id": "doc-4ca35f6458d8c076",
+      "title": "The National Civil (Code) Act, 2017 (Muluki Civil Code 2074) — English",
+      "act_name": "Muluki Civil Code 2074",
+      "category": "CODES",
+      "language": "EN",
+      "file_name": "Muluki_Civil_Code_2074_EN.pdf",
+      "source_path": "D:\\Codes\\WakilAI\\backend\\data\\raw\\Muluki_Civil_Code_2074_EN.pdf",
+      "source_url": "https://faolex.fao.org/docs/pdf/nep209663.pdf",
+      "sha256": "4ca35f6458d8c076a03cdea7fa82bb73f3c94dac8bc9769f6c6959e23a37bc26",
+      "file_size_bytes": 13428650,
+      "page_count": 404,
+      "chunks_count": 869,
+      "status": "INDEXED",
+      "ingested_at": "2026-11-26T02:05:05.626691Z",
+      "metadata": {
+        "preeti_pages": 0,
+        "pypdf_fallback_pages": 0
+      }
+    },
+    "doc-69d7a78762beacda": {
+      "doc_id": "doc-69d7a78762beacda",
+      "title": "The National Penal (Code) Act, 2017 (Muluki Criminal Code 2074) — English",
+      "act_name": "Muluki Criminal Code 2074",
+      "category": "CODES",
+      "language": "EN",
+      "file_name": "Muluki_Penal_Code_2074_EN.pdf",
+      "source_path": "D:\\Codes\\WakilAI\\backend\\data\\raw\\Muluki_Penal_Code_2074_EN.pdf",
+      "source_url": "https://www.globalanimallaw.org/downloads/database/criminal-code-nepal.pdf",
+      "sha256": "69d7a78762beacdae4f5c28d2ce29fa002140f756f992d7c2945cb47dc4e530d",
+      "file_size_bytes": 5140549,
+      "page_count": 200,
+      "chunks_count": 390,
+      "status": "INDEXED",
+      "ingested_at": "2026-11-26T02:05:52.600327Z",
+      "metadata": {
+        "preeti_pages": 0,
+        "pypdf_fallback_pages": 0
+      }
+    },
+    "doc-7f68a8b66adf579b": {
+      "doc_id": "doc-7f68a8b66adf579b",
+      "title": "Electronic Transactions Act, 2063 (2008) — English",
+      "act_name": "Electronic Transactions Act 2063",
+      "category": "CODES",
+      "language": "EN",
+      "file_name": "Electronic_Transactions_Act_2063_EN.pdf",
+      "source_path": "D:\\Codes\\WakilAI\\backend\\data\\raw\\Electronic_Transactions_Act_2063_EN.pdf",
+      "source_url": "https://radiantca.com.np/assets/nav_file/Electronic%20Transaction%20Act%202063.pdf",
+      "sha256": "7f68a8b66adf579b5ba595f9062abcd8c61f9fddfaadffe06c8e4b752d76b4b6",
+      "file_size_bytes": 154932,
+      "page_count": 36,
+      "chunks_count": 92,
+      "status": "INDEXED",
+      "ingested_at": "2026-11-26T02:06:01.954827Z",
+      "metadata": {
+        "preeti_pages": 0,
+        "pypdf_fallback_pages": 0
+      }
+    }
+  }
+}

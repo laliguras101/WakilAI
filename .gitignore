@@ -78,3 +78,20 @@ ui-debug.log*
 
 # Node dependencies (if running firestore.test.js locally)
 node_modules/
+
+# Python / FastAPI backend
+.venv/
+backend/.venv/
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+**/.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+backend/data/qdrant/
+backend/data/*.pkl
+backend/data/raw/
