@@ -1,0 +1,47 @@
+services:
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: wakilai-qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_storage:/qdrant/storage
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: wakilai-backend
+    ports:
+      - "8000:8000"
+    depends_on:
+      - qdrant
+    environment:
+      HOST: 0.0.0.0
+      PORT: 8000
+      QDRANT_URL: http://qdrant:6333
+      QDRANT_API_KEY: ${QDRANT_API_KEY:-}
+      QDRANT_PATH: ./data/qdrant
+      BM25_PATH: ./data/bm25_index.json
+      MANIFEST_PATH: ./data/corpus_manifest.json
+      RAW_DATA_DIR: ./data/raw
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      KILOCODE_API_KEY: ${KILOCODE_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-}
+      TAVILY_API_KEY: ${TAVILY_API_KEY:-}
+      EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-auto}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-gemini-embedding-001}
+      EMBEDDING_DIM: ${EMBEDDING_DIM:-768}
+      DEFAULT_LLM_PROVIDER: ${DEFAULT_LLM_PROVIDER:-auto}
+      KILO_BASE_URL: ${KILO_BASE_URL:-https://api.kilo.ai/api/gateway}
+      DEFAULT_KILO_MODEL: ${DEFAULT_KILO_MODEL:-kilo-auto/free}
+      DEFAULT_GEMINI_MODEL: ${DEFAULT_GEMINI_MODEL:-gemini-2.5-flash}
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
+
+volumes:
+  qdrant_storage:

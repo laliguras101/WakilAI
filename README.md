@@ -132,14 +132,14 @@ To attach your Firebase project for live Authentication and Firestore:
    ```
 2. Run FlutterFire configuration targeting `np.gov.wakil.wakil_ai`:
    ```bash
-   flutterfire configure --android-package-name=np.gov.wakil.wakil_ai
+   flutterfire configure --project=wakil-3a91d --android-package-name=np.gov.wakil.wakil_ai
    ```
-   This generates `lib/firebase_options.dart` and an Android `android/app/google-services.json` bound to `np.gov.wakil.wakil_ai`.
+   This binds `wakil-3a91d` and generates `lib/firebase_options.dart` plus `android/app/google-services.json` for `np.gov.wakil.wakil_ai`.
 
-### 3. Named Cloud Firestore Database, Rules & Blueprint
+### 3. Cloud Firestore Database, Rules & Blueprint
 
-- **Named Database (`firebase.json` & `FirebaseBootstrap`):**
-  - Database ID: `ai-studio-android-wakil-77bdd334-2113-412c-86b4-be03ef0044f1`
+- **Cloud Firestore (`firebase.json` & `FirebaseBootstrap`):**
+  - Project: `wakil-3a91d` · Database ID: `(default)` (`asia-south1` Mumbai)
   - Configured in `firebase.json` under `firestore[0].database` and referenced by `FirebaseBootstrap.defaultFirestoreDatabaseId` (`lib/services/firebase_bootstrap.dart`).
   - `FirebaseBootstrap.firestoreOrNull()` retrieves `FirebaseFirestore.instanceFor(app: targetApp, databaseId: databaseId ?? _state.firestoreDatabaseId)`.
 - **Security Rules (`firestore.rules`):**

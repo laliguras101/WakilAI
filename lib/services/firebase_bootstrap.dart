@@ -81,9 +81,8 @@ class FirebaseBootstrapState {
 class FirebaseBootstrap {
   FirebaseBootstrap._();
 
-  /// Named Cloud Firestore database provisioned in `firebase.json`.
-  static const String defaultFirestoreDatabaseId =
-      'ai-studio-android-wakil-77bdd334-2113-412c-86b4-be03ef0044f1';
+  /// Cloud Firestore `(default)` database bound to Firebase project `wakil-3a91d`.
+  static const String defaultFirestoreDatabaseId = '(default)';
 
   static FirebaseBootstrapState _state = FirebaseBootstrapState.initial();
   static Future<FirebaseBootstrapState>? _inFlightInit;

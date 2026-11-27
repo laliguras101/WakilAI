@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "764501338036",
+    "project_id": "wakil-3a91d",
+    "storage_bucket": "wakil-3a91d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:764501338036:android:824b384f58bcfc95a774e1",
+        "android_client_info": {
+          "package_name": "np.gov.wakil.wakil_ai"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "764501338036-rnkc4o7satnplhvp3h5crol995ska90d.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "np.gov.wakil.wakil_ai",
+            "certificate_hash": "c45a1e938208af459f8ba34b630c20434a42bc31"
+          }
+        },
+        {
+          "client_id": "764501338036-hst4862optee87ob9vrvd5pjcbppk9c9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD62IVf72TIepJGvyw5RQYydAKAP3_Wdw4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "764501338036-hst4862optee87ob9vrvd5pjcbppk9c9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

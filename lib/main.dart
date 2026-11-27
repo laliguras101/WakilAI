@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'constants/app_colors.dart';
+import 'firebase_options.dart';
 import 'services/services.dart';
 import 'view/authentication/login_screen.dart';
 import 'view/authentication/otp_verification_screen.dart';
@@ -14,7 +15,9 @@ import 'view/onboarding/splash_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await FirebaseBootstrap.initializeSafely();
+  await FirebaseBootstrap.initializeSafely(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const WakilApp());
 }
 
