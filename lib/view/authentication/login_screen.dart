@@ -2,6 +2,7 @@ import 'package:ai39a/constants/app_colors.dart';
 import 'package:ai39a/constants/app_images.dart';
 import 'package:ai39a/services/auth_service.dart';
 import 'package:ai39a/view/authentication/otp_verification_screen.dart';
+import 'package:ai39a/view/authentication/password_recovery_screen.dart';
 import 'package:ai39a/view/authentication/widgets/social_media_card.dart';
 import 'package:ai39a/view/dashboard/dashboard_screen.dart';
 import 'package:flutter/material.dart';
@@ -65,7 +66,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 4.0),
           child: Form(
             key: _formKey,
             child: Column(
@@ -73,40 +74,40 @@ class _LoginScreenState extends State<LoginScreen> {
               children: [
                 // Brand Emblem
                 Container(
-                  width: 68,
-                  height: 68,
+                  width: 56,
+                  height: 56,
                   decoration: const BoxDecoration(
                     color: AppColors.primary,
                     shape: BoxShape.circle,
                   ),
                   child: const Center(
-                    child: Icon(Icons.balance, color: AppColors.emblemGold, size: 34),
+                    child: Icon(Icons.balance, color: AppColors.emblemGold, size: 28),
                   ),
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 10),
 
                 const Text(
                   "Sign in to Wakil",
                   style: TextStyle(
-                    fontSize: 24,
+                    fontSize: 22,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textPrimary,
                   ),
                 ),
 
-                const SizedBox(height: 6),
+                const SizedBox(height: 4),
 
                 const Text(
                   "Sync your legal conversations, saved statutes, and case notes securely across devices.",
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 12,
                     color: AppColors.textSecondary,
                   ),
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 14),
 
                 // Social Media Buttons (AI39A Techstack)
                 Row(
@@ -134,7 +135,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ],
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 14),
 
                 Row(
                   children: [
@@ -155,7 +156,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ],
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 14),
 
                 // US-04: Email / Phone Input
                 TextFormField(
@@ -186,7 +187,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   },
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
 
                 // US-05: Password Input with Eye Visibility Toggle
                 TextFormField(
@@ -227,15 +228,44 @@ class _LoginScreenState extends State<LoginScreen> {
                   },
                 ),
 
+                const SizedBox(height: 4),
+
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    key: const Key('forgot_password_button'),
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      minimumSize: const Size(50, 30),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const PasswordRecoveryScreen(),
+                        ),
+                      );
+                    },
+                    child: const Text(
+                      "Forgot Password?",
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ),
+                ),
+
                 if (_errorMessage != null) ...[
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
                   Text(
                     _errorMessage!,
                     style: const TextStyle(color: AppColors.error, fontSize: 13),
                   ),
                 ],
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 12),
 
                 // Submit Button
                 SizedBox(
