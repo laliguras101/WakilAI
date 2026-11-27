@@ -24,6 +24,53 @@ class AuthService {
   String? currentUserId;
   String? currentPhoneNumber;
 
+  // Multi-Session & Global Session Revocation (US-13)
+  int _tokenVersion = 1;
+  final Set<String> _activeSessions = <String>{};
+  DateTime? _lastRevocationTimestamp;
+  String? _storedPassword;
+
+  int get tokenVersion => _tokenVersion;
+  DateTime? get lastRevocationTimestamp => _lastRevocationTimestamp;
+  Set<String> get activeSessions => Set.unmodifiable(_activeSessions);
+  String? get currentPassword => _storedPassword;
+  String? get storedPassword => _storedPassword;
+
+  void registerSession(String token) {
+    _activeSessions.add(token);
+  }
+
+  void createSession(String token) {
+    registerSession(token);
+  }
+
+  Future<void> updatePasswordWithRevocation({
+    required String newPassword,
+    required bool revokeOtherSessions,
+    String? currentSessionToken,
+  }) async {
+    _storedPassword = newPassword;
+    if (revokeOtherSessions) {
+      _tokenVersion++;
+      _lastRevocationTimestamp = DateTime.now();
+      _activeSessions.removeWhere((session) => session != currentSessionToken);
+      if (currentSessionToken != null) {
+        _activeSessions.add(currentSessionToken);
+      }
+    }
+  }
+
+  bool isSessionValid(String token, int tokenVersion) {
+    return _activeSessions.contains(token) && tokenVersion == _tokenVersion;
+  }
+
+  void resetSessions() {
+    _tokenVersion = 1;
+    _activeSessions.clear();
+    _lastRevocationTimestamp = null;
+    _storedPassword = null;
+  }
+
   // Single-Use Token Invalidation Registry (Replay Prevention)
   final Set<String> _burnedOtpTokens = {};
 
@@ -131,5 +178,6 @@ class AuthService {
     currentUserId = null;
     currentPhoneNumber = null;
     resetLockout();
+    resetSessions();
   }
 }
