@@ -85,7 +85,7 @@ class _LegalDisclaimerSheetState extends State<LegalDisclaimerSheet> {
               ),
               const SizedBox(height: 20),
               const Text(
-                'AI Legal Information',
+                'AI Legal Information • कानुनी सूचना',
                 key: Key('disclaimer_title'),
                 style: TextStyle(
                   fontSize: 20,
@@ -97,7 +97,7 @@ class _LegalDisclaimerSheetState extends State<LegalDisclaimerSheet> {
               ),
               const SizedBox(height: 10),
               const Text(
-                'Wakil uses advanced AI to help navigate Nepali legal statutes, court procedures, and legal documents. It is provided strictly for informational purposes and does not constitute formal legal counsel.',
+                'Wakil uses advanced AI to help navigate Nepali legal statutes, court procedures, and legal documents. It is provided strictly for informational purposes and does not constitute formal legal counsel.\n(वकिलले नेपाली ऐन, नियम र कार्यविधि बुझ्न सहयोग गर्दछ। यो केवल सूचनामूलक प्रयोजनका लागि हो।)',
                 style: TextStyle(
                   fontSize: 14,
                   height: 22.75 / 14,
@@ -163,7 +163,7 @@ class _LegalDisclaimerSheetState extends State<LegalDisclaimerSheet> {
                             ),
                             SizedBox(height: 12),
                             Text(
-                              '• Grounded exclusively in Constitution of Nepal & Muluki Codes.\n• Real-time advocate consultation required for official court proceedings.\n• All communications are encrypted.',
+                              '• Grounded exclusively in Constitution of Nepal & Muluki Codes (मुलुकी संहिता).\n• Under the Legal Practitioners Act 2050 (नेपाल कानुन व्यवसायी परिषद ऐन, २०५०), this AI provides statutory legal reference, not certified courtroom advocacy.\n• Real-time advocate consultation required for official court proceedings.\n• All communications are encrypted.',
                               style: TextStyle(
                                 fontSize: 13,
                                 height: 19 / 13,
@@ -201,7 +201,7 @@ class _LegalDisclaimerSheetState extends State<LegalDisclaimerSheet> {
                       child: const Padding(
                         padding: EdgeInsets.only(top: 10.0),
                         child: Text(
-                          'I understand Wakil provides legal information, not formal legal counsel.',
+                          'I understand Wakil provides legal information, not formal legal counsel.\n(म स्वीकार गर्दछु कि वकिलले कानुनी जानकारी मात्र प्रदान गर्दछ।)',
                           style: TextStyle(
                             fontSize: 13,
                             height: 18 / 13,

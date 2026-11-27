@@ -334,7 +334,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                               const SizedBox(height: 16),
 
                               const Text(
-                                'Enter 6-digit code',
+                                'Enter 6-digit code • फोन प्रमाणीकरण',
                                 key: Key('otp_title'),
                                 style: TextStyle(
                                   fontSize: 18,
